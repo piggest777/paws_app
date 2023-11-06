@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "35895836921",
+    "project_id": "paws-of-peace",
+    "storage_bucket": "paws-of-peace.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:35895836921:android:138fd39810135fbc56e228",
+        "android_client_info": {
+          "package_name": "com.example.paws_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7VsLVOzPGcZLEfoWppQ2y459HsCtxujs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
