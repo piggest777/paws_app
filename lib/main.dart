@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:paws_app/src/views/login_view.dart';
+import 'package:paws_app/src/views/request_view.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> {
         if (user != null) {
           // If the user is not null, we're authenticated
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => Container()),
+            MaterialPageRoute(builder: (context) => RequestsPage()),
           );
         }
         // Handle the 'null' user case if necessary
@@ -70,7 +70,7 @@ class _HomePageState extends State<HomePage> {
           if (user == null) {
             return LoginPage();
           } else {
-            return Container();
+            return RequestsPage();
           }
         } else {
           return const Scaffold(
