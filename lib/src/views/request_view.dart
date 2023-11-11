@@ -1,8 +1,10 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:paws_app/src/views/search_person_page.dart';
+import 'package:paws_app/src/views/settings_page.dart';
 import 'package:paws_app/src/views/view_components/request_card.dart';
+
+import '../models/request.dart';
 
 class RequestsPage extends StatefulWidget {
   @override
@@ -22,7 +24,7 @@ class _RequestsPageState extends State<RequestsPage> {
           icon: Icon(Icons.settings),
           onPressed: () {
             Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => Container(),
+              builder: (ctx) => SettingsPage(),
             ));
           },
         ),
@@ -48,17 +50,26 @@ class _RequestsPageState extends State<RequestsPage> {
             return Center(child: Text('No data available'));
           }
 
-          List<DocumentSnapshot> documents = snapshot.data!.docs;
+          List<Request> requests = snapshot.data!.docs.map((doc) {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+            return Request(
+              personId: data['personId'],
+              name: data['name'],
+              surname: data['surname'],
+              region: data['region'],
+              city: data['city'],
+              isUrgent: data['isUrgent'],
+              isRepeat: data['isRepeat'],
+              isProxy: data['isProxy'],
+              organizationName: data['organizationName'],
+              comments: data['comments'],
+            );
+          }).toList();
 
           return ListView.builder(
-            itemCount: documents.length,
+            itemCount: requests.length,
             itemBuilder: (context, index) {
-              Map<String, dynamic> request = documents[index].data() as Map<String, dynamic>;
-
-              // Assuming 'title' is a field in your document
-              String title = request['title'] ?? 'Untitled';
-
-              return RequestCard(requestData: documents[index].data() as Map<String, dynamic>);
+              return RequestCard(request: requests[index]);
             },
           );
         },
@@ -76,7 +87,9 @@ class _RequestsPageState extends State<RequestsPage> {
 
   void _addNewRequest(BuildContext context) {
     // Navigate to a new page or show a dialog to add a new request
-    print('Add new request');
+     Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => SearchPersonPage()),
+                );
   }
 
   void _scanQRCode() {

@@ -38,35 +38,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  StreamSubscription<User?>? _authSubscription;
 
   @override
-  void initState() {
-    super.initState();
-
-    _authSubscription = _auth.authStateChanges().listen((User? user) {
-      if (mounted) {
-        // Check if the widget is still in the tree
-        if (user != null) {
-          // If the user is not null, we're authenticated
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => RequestsPage()),
-          );
-        }
-        // Handle the 'null' user case if necessary
-      }
-    });
-  }
-
-    @override
   Widget build(BuildContext context) {
+   
     return StreamBuilder<User?>(
       stream: _auth.authStateChanges(),
       builder: (context, snapshot) {
-        // Show loading screen while the auth state is being determined
         if (snapshot.connectionState == ConnectionState.active) {
           final User? user = snapshot.data;
-          // If the user is null, we're not authenticated
           if (user == null) {
             return LoginPage();
           } else {
@@ -82,10 +62,5 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-  @override
-  void dispose() {
-    _authSubscription?.cancel(); // Cancel the subscription
-    super.dispose();
-  }
 }
+

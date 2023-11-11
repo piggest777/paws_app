@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paws_app/src/views/request_view.dart';
 
 import '../../services/auth_service.dart';
 
@@ -37,9 +38,9 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
 
                 try {
                   await _authService.signInWithGoogle();
-                  // Navigator.of(context).pushReplacement(
-                  //   MaterialPageRoute(builder: (context) => ProductList()),
-                  // ); // Navigate to ProductList after successful login.
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (context) => RequestsPage()),
+                  ); // Navigate to ProductList after successful login.
                 } catch (e) {
                   print("Error signing in with Google: $e");
                   ScaffoldMessenger.of(context).showSnackBar(
