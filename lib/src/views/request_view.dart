@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:paws_app/src/models/box.dart';
+import 'package:paws_app/src/views/box_detail_page.dart';
+import 'package:paws_app/src/views/qr_scan_page.dart';
 import 'package:paws_app/src/views/search_person_page.dart';
 import 'package:paws_app/src/views/settings_page.dart';
 import 'package:paws_app/src/views/view_components/request_card.dart';
@@ -51,19 +54,7 @@ class _RequestsPageState extends State<RequestsPage> {
           }
 
           List<Request> requests = snapshot.data!.docs.map((doc) {
-            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-            return Request(
-              personId: data['personId'],
-              name: data['name'],
-              surname: data['surname'],
-              region: data['region'],
-              city: data['city'],
-              isUrgent: data['isUrgent'],
-              isRepeat: data['isRepeat'],
-              isProxy: data['isProxy'],
-              organizationName: data['organizationName'],
-              comments: data['comments'],
-            );
+            return Request.fromMap(doc.data() as Map<String, dynamic>, doc.id);
           }).toList();
 
           return ListView.builder(
@@ -92,7 +83,29 @@ class _RequestsPageState extends State<RequestsPage> {
                 );
   }
 
-  void _scanQRCode() {
-    print("Clicked");
+void _scanQRCode() async {
+  String? scannedCode = await Navigator.of(context).push(
+    MaterialPageRoute(builder: (context) => QRScanPage()),
+  );
+
+  if (scannedCode != null) {
+    _validateAndNavigate(scannedCode);
   }
+}
+
+void _validateAndNavigate(String boxId) async {
+  // Check if a box with the scanned ID exists in Firestore
+  var boxSnapshot = await FirebaseFirestore.instance.collection('boxes').doc(boxId).get();
+  if (boxSnapshot.exists) {
+    // If the box exists, navigate to the BoxDetailsPage with the boxId
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => BoxDetailsPage(boxId: boxId),
+    ));
+  } else {
+    // Handle the scenario where the box does not exist
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Box not found with ID: $boxId'))
+    );
+  }
+}
 }

@@ -1,4 +1,5 @@
 class Request {
+  String id;
   String personId;
   String name;
   String surname;
@@ -11,6 +12,7 @@ class Request {
   String comments;
 
   Request({
+    required this.id,
     required this.personId,
     required this.name,
     required this.surname,
@@ -36,5 +38,21 @@ class Request {
       'organizationName': isProxy ? organizationName : null, // Include only if isProxy is true
       'comments': comments,
     };
+  }
+
+    factory Request.fromMap(Map<String, dynamic> map, String id) {
+    return Request(
+      id: id,
+      personId: map['personId'] ?? '',
+      name: map['name'] ?? '',
+      surname: map['surname'] ?? '',
+      region: map['region'] ?? '',
+      city: map['city'] ?? '',
+      isUrgent: map['isUrgent'] ?? false,
+      isRepeat: map['isRepeat'] ?? false,
+      isProxy: map['isProxy'] ?? false,
+      organizationName: map['organizationName'],
+      comments: map['comments'] ?? '',
+    );
   }
 }

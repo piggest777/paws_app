@@ -1,0 +1,486 @@
+import 'package:flutter/material.dart';
+import 'package:paws_app/src/models/box.dart';
+import 'package:paws_app/src/models/person.dart';
+import 'package:paws_app/src/models/request.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:paws_app/src/services/pdf_manager.dart';
+import 'package:paws_app/src/views/request_detatil_page.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:screenshot/screenshot.dart';
+
+class BoxDetailsPage extends StatefulWidget {
+  final Box? box;
+  final String? boxId; // ID from QR code
+  final Request? request;
+
+  BoxDetailsPage({Key? key, this.box, this.boxId, this.request})
+      : super(key: key);
+
+  @override
+  _BoxDetailsPageState createState() => _BoxDetailsPageState();
+}
+
+class _BoxDetailsPageState extends State<BoxDetailsPage> {
+  Request? request;
+  Box? box;
+  String? boxId;
+  bool isLoading = false;
+  BoxSize? selectedSize;
+  BoxType? selectedType;
+  BoxStatus? selectedStatus;
+  final TextEditingController _commentController = TextEditingController();
+  final _screenshotController = ScreenshotController();
+  bool isEditMode = false;
+  String? comment;
+  String? requestName;
+  Person? person;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.box != null && widget.request != null) {
+      // Both Box and Request objects are provided
+      box = widget.box;
+      request = widget.request;
+      selectedSize = widget.box?.size;
+      selectedType = widget.box?.type;
+      selectedStatus = widget.box?.status ?? BoxStatus.created;
+      comment = widget.box?.comment ?? '';
+      requestName = widget.request?.name;
+      _commentController.text = widget.box?.comment ?? '';
+      fetchPersonDetails(request?.personId);
+    } else if (widget.boxId != null) {
+      boxId = widget.boxId;
+      // Only Box ID is provided, fetch Box and then Request
+      fetchBoxAndRequestDetails(boxId!);
+    }
+  }
+
+  void fetchBoxAndRequestDetails(String boxId) async {
+    setState(() => isLoading = true);
+    try {
+      var boxSnapshot =
+          await FirebaseFirestore.instance.collection('boxes').doc(boxId).get();
+      if (boxSnapshot.exists) {
+        var fetchedBox = Box.fromMap(boxSnapshot.data()!, boxId);
+        var requestSnapshot = await FirebaseFirestore.instance
+            .collection('requests')
+            .doc(fetchedBox.requestId)
+            .get();
+
+        if (requestSnapshot.exists) {
+          setState(() {
+            box = fetchedBox;
+            request =
+                Request.fromMap(requestSnapshot.data()!, fetchedBox.requestId);
+            selectedSize = fetchedBox.size;
+            selectedType = fetchedBox.type;
+            selectedStatus = fetchedBox.status;
+            comment = fetchedBox.comment ?? '';
+            _commentController.text = fetchedBox.comment ?? '';
+            requestName = requestSnapshot.data()!['name'];
+            fetchPersonDetails(request?.personId);
+            isLoading = false;
+          });
+        } else {
+          print('Request not found');
+          setState(() => isLoading = false);
+        }
+      } else {
+        print('Box not found');
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print('Error fetching box and request details: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  void fetchPersonDetails(String? personId) async {
+    try {
+      var personSnapshot = await FirebaseFirestore.instance
+          .collection('persons')
+          .doc(personId)
+          .get();
+
+      if (personSnapshot.exists) {
+        setState(() {
+          person = Person.fromMap(personSnapshot.data()!, personSnapshot.id);
+        });
+      } else {
+        print(
+            'Person not found'); // Handle the case where the person does not exist
+      }
+    } catch (e) {
+      print('Error fetching person: $e'); // Handle any errors here
+    }
+  }
+
+  void _navigateToRequestDetails(BuildContext context) {
+  if (request != null) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => RequestDetailsPage(request: request!),
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Request details not available')),
+    );
+  }
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Box Details')),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            if (box != null || boxId != null)
+              Screenshot(
+                  child: _buildQRCode(box?.id ?? boxId!),
+                  controller: _screenshotController),
+            SizedBox(height: 10),
+            if (requestName != null)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        '$requestName',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                                            Text(
+                        'Box #${box?.boxID}',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            SizedBox(height: 5),
+            _buildBoxDetailsCard(),
+            SizedBox(height: 5),
+            _buildStatusCard(),
+            SizedBox(height: 5),
+            _buildCommentSection(),
+            SizedBox(height: 5),
+            if (box != null &&
+                request != null &&
+                person != null) // Check if both objects are created
+              Center(
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: _createAndSharePdf,
+                      child: Text('Create and Share PDF'),
+                    ),
+                    if(boxId != null) 
+                    ElevatedButton(
+                      onPressed: () => _navigateToRequestDetails(context),
+                      child: Text('View Request Details'),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _createAndSharePdf() async {
+    if (widget.box?.id != null || boxId != null) {
+      PDFManager pdfManager =
+          PDFManager(box: box, request: request, person: person);
+      pdfManager.createAndSharePdf();
+    } else {
+      print("can't create pdf without box id");
+    }
+  }
+
+  Widget _buildQRCode(String data) {
+    return Center(
+      child: QrImageView(
+        data: data,
+        version: QrVersions.auto,
+        size: 200.0,
+        gapless: false,
+      ),
+    );
+  }
+
+  Widget _buildBoxDetailsCard() {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: IntrinsicHeight(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
+                    DropdownButton<BoxSize>(
+                      value: selectedSize,
+                      onChanged: (BoxSize? newValue) {
+                        setState(() {
+                          selectedSize = newValue;
+                          _updateBoxSizeInFirebase(selectedSize);
+                        });
+                      },
+                      items: BoxSize.values
+                          .map<DropdownMenuItem<BoxSize>>((BoxSize value) {
+                        return DropdownMenuItem<BoxSize>(
+                          value: value,
+                          child: Text(value.toString().split('.').last),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            VerticalDivider(width: 1, thickness: 1),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 10.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
+                    DropdownButton<BoxType>(
+                      value: selectedType,
+                      onChanged: (BoxType? newValue) {
+                        setState(() {
+                          selectedType = newValue;
+                          _updateBoxTypeInFirebase(newValue);
+                        });
+                      },
+                      items: BoxType.values
+                          .map<DropdownMenuItem<BoxType>>((BoxType value) {
+                        return DropdownMenuItem<BoxType>(
+                          value: value,
+                          child: Text(value.toString().split('.').last),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _updateBoxSizeInFirebase(BoxSize? newSize) {
+    if (box?.id != null && newSize != null) {
+      FirebaseFirestore.instance
+          .collection('boxes')
+          .doc(box!.id)
+          .update({'size': newSize.toString()})
+          .then((_) => _showSnackbar('Size updated successfully', Colors.green))
+          .catchError((error) =>
+              _showSnackbar('Error updating size: $error', Colors.red));
+    } else {
+      _showSnackbar('Error: Box ID is not available', Colors.red);
+    }
+  }
+
+  void _updateBoxTypeInFirebase(BoxType? newType) {
+    if (box?.id != null && newType != null) {
+      FirebaseFirestore.instance
+          .collection('boxes')
+          .doc(box!.id)
+          .update({'type': newType.toString()})
+          .then((_) => _showSnackbar('Type updated successfully', Colors.green))
+          .catchError((error) =>
+              _showSnackbar('Error updating type: $error', Colors.red));
+    } else {
+      _showSnackbar('Error: Box ID is not available', Colors.red);
+    }
+  }
+
+  void _showSnackbar(String message, Color backgroundColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+      ),
+    );
+  }
+
+  Widget _buildStatusCard() {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(Icons.chevron_left),
+              onPressed:
+                  selectedStatus != null ? () => _changeStatus(-1) : null,
+            ),
+            Expanded(
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<BoxStatus>(
+                  value: selectedStatus,
+                  isExpanded: true,
+                  onChanged: selectedStatus != null
+                      ? (BoxStatus? newValue) {
+                          setState(() {
+                            selectedStatus = newValue;
+                          });
+                          _updateStatusInFirebase(newValue!);
+                        }
+                      : null,
+                  items: BoxStatus.values
+                      .map<DropdownMenuItem<BoxStatus>>((BoxStatus value) {
+                    return DropdownMenuItem<BoxStatus>(
+                      value: value,
+                      child:
+                          Center(child: Text(value.toString().split('.').last)),
+                    );
+                  }).toList(),
+                  icon: Container(), // To remove the default dropdown icon
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.chevron_right),
+              onPressed: selectedStatus != null ? () => _changeStatus(1) : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _changeStatus(int direction) {
+    int currentIndex = BoxStatus.values.indexOf(selectedStatus!);
+    int newIndex = (currentIndex + direction) % BoxStatus.values.length;
+    if (newIndex < 0) newIndex = BoxStatus.values.length - 1;
+    setState(() {
+      selectedStatus = BoxStatus.values[newIndex];
+    });
+    _updateStatusInFirebase(BoxStatus.values[newIndex]);
+  }
+
+  void _updateStatusInFirebase(BoxStatus newStatus) {
+    if (box?.id != null) {
+      FirebaseFirestore.instance
+          .collection('boxes')
+          .doc(box!.id)
+          .update({'status': newStatus.toString()}).catchError((error) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating status: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      });
+    } else {
+      // Handle case where box ID is null
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: Box ID is not available'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildCommentSection() {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      child: Padding(
+        padding: EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text('Comments',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            isEditMode
+                ? TextFormField(
+                    controller: _commentController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your comment',
+                    ),
+                    maxLines: null, // Allows the input to expand as needed
+                  )
+                : Text(comment ?? 'No comment', softWrap: true),
+            SizedBox(height: 10),
+            Center(
+              child: ElevatedButton(
+                onPressed: isEditMode ? _saveComment : _enableEditMode,
+                child: Text(isEditMode ? 'Save Comment' : 'Edit'),
+              ),
+            ),
+            // Display existing comments here
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _enableEditMode() {
+    setState(() {
+      _commentController.text = comment ?? '';
+      isEditMode = true;
+    });
+  }
+
+  void _saveComment() {
+    // Implement the logic to save the comment to Firebase
+    final String commentText = _commentController.text;
+
+    if (commentText.isNotEmpty && box != null) {
+      FirebaseFirestore.instance.collection('boxes').doc(box!.id).update({
+        'comment': commentText,
+      }).then((_) {
+        setState(() {
+          comment = commentText; // Update the comment state
+          isEditMode = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Comment updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating comment: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Comment cannot be empty'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+}

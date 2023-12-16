@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/request.dart';
+import '../request_detatil_page.dart';
 
 class RequestCard extends StatelessWidget {
   final Request request;
@@ -75,6 +76,10 @@ class RequestCard extends StatelessWidget {
   }
 
   void _navigateToRequestDetails(BuildContext context, Request request) {
-    // Navigation logic to request details page, passing the Request object
+    Navigator.of(context).push(
+     MaterialPageRoute(
+      builder: (context) => RequestDetailsPage(request: request),
+    ),
+  );
   }
 }

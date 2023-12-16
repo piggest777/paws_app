@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:paws_app/src/views/request_detatil_page.dart';
 import '../models/person.dart';
 import '../models/request.dart';
 
@@ -27,6 +28,7 @@ class _RequestCreationPageState extends State<RequestCreationPage> {
   });
     // Create a Request object
     Request newRequest = Request(
+      id: '',
       personId: widget.person.id,
       name: widget.person.name,
       surname: widget.person.surname,
@@ -55,8 +57,30 @@ class _RequestCreationPageState extends State<RequestCreationPage> {
 
 void _saveRequest(Request newRequest) async {
   try {
-    await FirebaseFirestore.instance.collection('requests').add(newRequest.toMap());
-    // Handle successful save
+    DocumentReference docRef = await FirebaseFirestore.instance.collection('requests').add(newRequest.toMap());
+    
+        String requestId = docRef.id;
+
+    // Create a complete Request object with the ID
+    Request completeRequest = Request(
+      id: requestId, // Set the retrieved ID
+      personId: newRequest.personId,
+      name: newRequest.name,
+      surname: newRequest.surname,
+      region: newRequest.region,
+      city: newRequest.city,
+      isUrgent: newRequest.isUrgent,
+      isRepeat: newRequest.isRepeat,
+      isProxy: newRequest.isProxy,
+      organizationName: newRequest.organizationName,
+      comments: newRequest.comments,
+    );
+      Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => RequestDetailsPage(request: completeRequest),
+      ),
+    );
+
   } catch (e) {
     // Handle errors
   }
