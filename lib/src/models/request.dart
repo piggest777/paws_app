@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Request {
   String id;
   String personId;
@@ -8,8 +10,9 @@ class Request {
   bool isUrgent;
   bool isRepeat;
   bool isProxy;
-  String? organizationName; // Nullable since it's only needed if isProxy is true
+  String? organizationName;
   String comments;
+  Timestamp? timestamp; 
 
   Request({
     required this.id,
@@ -23,6 +26,7 @@ class Request {
     required this.isProxy,
     this.organizationName,
     required this.comments,
+    this.timestamp, 
   });
 
   Map<String, dynamic> toMap() {
@@ -35,12 +39,13 @@ class Request {
       'isUrgent': isUrgent,
       'isRepeat': isRepeat,
       'isProxy': isProxy,
-      'organizationName': isProxy ? organizationName : null, // Include only if isProxy is true
+      'organizationName': isProxy ? organizationName : null,
       'comments': comments,
+      'timestamp': timestamp ?? FieldValue.serverTimestamp(), // Use server timestamp
     };
   }
 
-    factory Request.fromMap(Map<String, dynamic> map, String id) {
+  factory Request.fromMap(Map<String, dynamic> map, String id) {
     return Request(
       id: id,
       personId: map['personId'] ?? '',
@@ -53,6 +58,8 @@ class Request {
       isProxy: map['isProxy'] ?? false,
       organizationName: map['organizationName'],
       comments: map['comments'] ?? '',
+      timestamp: map['timestamp'] is Timestamp ? map['timestamp'] : null, 
     );
   }
 }
+

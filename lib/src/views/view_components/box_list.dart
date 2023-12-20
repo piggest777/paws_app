@@ -9,7 +9,7 @@ class BoxListWidget extends StatelessWidget {
   final String requestId;
   final Request request;
 
-  BoxListWidget({Key? key, required this.requestId, required this.request}) : super(key: key);
+  const BoxListWidget({super.key, required this.requestId, required this.request});
 
   Stream<List<Box>> getBoxesStream() {
     return FirebaseFirestore.instance
@@ -24,18 +24,18 @@ class BoxListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
       child: StreamBuilder<List<Box>>(
         stream: getBoxesStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Padding(
+            return const Padding(
               padding: EdgeInsets.symmetric(vertical: 20.0),
               child: CircularProgressIndicator(),
             );
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return ListTile(title: Text('No boxes found for this request.'));
+            return const ListTile(title: Text('No boxes found for this request.'));
           }
           List<Widget> boxListItems = [];
           for (var i = 0; i < snapshot.data!.length; i++) {
@@ -60,10 +60,10 @@ Widget _buildBoxListItem(BuildContext context, Box box) {
       children: [
         Text(
           'ID: ${box.boxID}', // Displaying the Box ID
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        SizedBox(width: 8), // Spacing between the ID and the icon
-        Icon(Icons.chevron_right),
+        const SizedBox(width: 8), // Spacing between the ID and the icon
+        const Icon(Icons.chevron_right),
       ],
     ),
     onTap: () {
@@ -76,7 +76,7 @@ Widget _buildBoxListItem(BuildContext context, Box box) {
 
 
   Widget _buildDivider() {
-    return Padding(
+    return const Padding(
       padding: EdgeInsets.symmetric(
           horizontal: 16.0), // Adjust the padding as needed
       child: Divider(),

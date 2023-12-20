@@ -63,11 +63,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBznM1yzU7eu-iUm99hK-w5-Hcb60X8NVc',
-    appId: '1:35895836921:ios:fe867c2e2d2f1f0e56e228',
+    appId: '1:35895836921:ios:cb483f7caae1473056e228',
     messagingSenderId: '35895836921',
     projectId: 'paws-of-peace',
     storageBucket: 'paws-of-peace.appspot.com',
-    iosBundleId: 'com.example.pawsApp',
+    androidClientId: '35895836921-hunchc49oadan81tnfs3fovekup0l3ea.apps.googleusercontent.com',
+    iosClientId: '35895836921-gmutopf93lbuiofjcd6uqng2btm1budt.apps.googleusercontent.com',
+    iosBundleId: 'com.example.pawsApp.RunnerTests',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -76,6 +78,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '35895836921',
     projectId: 'paws-of-peace',
     storageBucket: 'paws-of-peace.appspot.com',
+    androidClientId: '35895836921-hunchc49oadan81tnfs3fovekup0l3ea.apps.googleusercontent.com',
+    iosClientId: '35895836921-gmutopf93lbuiofjcd6uqng2btm1budt.apps.googleusercontent.com',
     iosBundleId: 'com.example.pawsApp.RunnerTests',
   );
 }

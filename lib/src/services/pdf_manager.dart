@@ -24,7 +24,7 @@ Future<void> createAndSharePdf() async {
   final pdf = pw.Document();
 
   // Load assets
-  final logoAsset = 'assets/pop_logo.png'; // Path to your logo asset
+  const logoAsset = 'assets/pop_logo.png'; // Path to your logo asset
   final qrData = box?.id ?? 'Unknown'; // Data for the QR code
   final image = await _loadImage(logoAsset); // Load the logo image
   final qrImage = await generateQRCodeImage(qrData); // Generate QR code image
@@ -50,7 +50,7 @@ Future<void> createAndSharePdf() async {
                 children: [
               if (image != null)
                 pw.Container(
-                  margin: pw.EdgeInsets.all(10),
+                  margin: const pw.EdgeInsets.all(10),
                   child: pw.Image(image, width: 200, height: 200),
                 ),
               pw.SizedBox(height: 20),
@@ -81,12 +81,12 @@ Future<void> createAndSharePdf() async {
               ),
               pw.SizedBox(height: 5),
               pw.Text(
-                '${person?.novaPostBranch ?? 'N/A'}',
+                person?.novaPostBranch ?? 'N/A',
                 style: pw.TextStyle(font: ttf, fontSize: 18),
               ),
               pw.SizedBox(height: 5),
               pw.Text(
-                '${person?.phone ?? 'N/A'}',
+                person?.phone ?? 'N/A',
                 style: pw.TextStyle(font: ttf, fontSize: 18),
               ),
               pw.SizedBox(height: 20),
@@ -143,11 +143,11 @@ Future<void> createAndSharePdf() async {
     qrCode.addData(data);
     final qrImage = QrImage(qrCode);
 
-    final pixelRatio = 3; // Increase for higher resolution
+    const pixelRatio = 3; // Increase for higher resolution
     final imageSize = qrCode.moduleCount * pixelRatio;
     final painter = ui.PictureRecorder();
     final canvas = ui.Canvas(painter);
-    final paint = ui.Paint()..color = ui.Color(0xFF000000); // QR color
+    final paint = ui.Paint()..color = const ui.Color(0xFF000000); // QR color
 
     for (int x = 0; x < qrCode.moduleCount; x++) {
       for (int y = 0; y < qrCode.moduleCount; y++) {

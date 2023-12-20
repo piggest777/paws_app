@@ -5,7 +5,7 @@ import 'package:paws_app/src/models/person.dart';
 class PersonInfoCard extends StatefulWidget {
   final String userId;
 
-  PersonInfoCard({Key? key, required this.userId}) : super(key: key);
+  const PersonInfoCard({super.key, required this.userId});
 
   @override
   _PersonInfoCardState createState() => _PersonInfoCardState();
@@ -43,17 +43,17 @@ class _PersonInfoCardState extends State<PersonInfoCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(8.0),
       child: isLoading
-          ? Padding(
+          ? const Padding(
               padding: EdgeInsets.all(16.0), child: CircularProgressIndicator())
           : Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: person != null
                     ? _buildPersonInfo()
-                    : [Text('Person data not found.')],
+                    : [const Text('Person data not found.')],
               ),
             ),
     );
@@ -63,7 +63,7 @@ class _PersonInfoCardState extends State<PersonInfoCard> {
     return [
       Text('Personal Information',
           style: Theme.of(context).textTheme.titleLarge),
-      SizedBox(height: 10),
+      const SizedBox(height: 10),
       _infoRow(Icons.person, '${person!.name} ${person!.surname}'),
       _infoRow(Icons.location_on, '${person!.region}, ${person!.city}'),
       _infoRow(Icons.local_post_office,
@@ -74,11 +74,11 @@ class _PersonInfoCardState extends State<PersonInfoCard> {
 
   Widget _infoRow(IconData icon, String text) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
           Icon(icon, color: Theme.of(context).primaryColor),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Text(text),
         ],
       ),

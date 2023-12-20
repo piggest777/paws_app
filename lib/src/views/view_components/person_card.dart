@@ -4,7 +4,7 @@ import 'package:paws_app/src/models/person.dart';
 class PersonCard extends StatelessWidget {
   final Person person;
 
-  const PersonCard({Key? key, required this.person}) : super(key: key);
+  const PersonCard({super.key, required this.person});
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +16,12 @@ class PersonCard extends StatelessWidget {
           children: [
             Text(
               '${person.name} ${person.surname}',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text('Region: ${person.region}'),
             Text('City: ${person.city}'),
             Text('Nova Post Branch: ${person.novaPostBranch}'),

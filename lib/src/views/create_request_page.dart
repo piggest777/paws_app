@@ -7,7 +7,7 @@ import '../models/request.dart';
 class RequestCreationPage extends StatefulWidget {
   final Person person;
 
-  RequestCreationPage({Key? key, required this.person}) : super(key: key);
+  const RequestCreationPage({super.key, required this.person});
 
   @override
   _RequestCreationPageState createState() => _RequestCreationPageState();
@@ -39,6 +39,7 @@ class _RequestCreationPageState extends State<RequestCreationPage> {
       isProxy: isProxy,
       organizationName: isProxy ? organizationName : null,
       comments: comments,
+      timestamp: null,
     );
 
     if (isProxy) {
@@ -73,7 +74,7 @@ void _saveRequest(Request newRequest) async {
       isRepeat: newRequest.isRepeat,
       isProxy: newRequest.isProxy,
       organizationName: newRequest.organizationName,
-      comments: newRequest.comments,
+      comments: newRequest.comments
     );
       Navigator.of(context).push(
       MaterialPageRoute(
@@ -90,19 +91,19 @@ void _saveRequest(Request newRequest) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create Request'),
+        title: const Text('Create Request'),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildPersonInfoSection(),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildRequestDetailsSection(),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildCommentsSection(),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildSubmitButton(),
           ],
         ),
@@ -114,7 +115,7 @@ void _saveRequest(Request newRequest) async {
     return Card(
       elevation: 4.0,
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -126,18 +127,18 @@ void _saveRequest(Request newRequest) async {
                 color: Theme.of(context).primaryColor,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               children: <Widget>[
                 Icon(Icons.person, color: Theme.of(context).primaryColor),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   '${widget.person.name} ${widget.person.surname}',
-                  style: TextStyle(fontSize: 16.0),
+                  style: const TextStyle(fontSize: 16.0),
                 ),
               ],
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             _buildInfoRow(Icons.location_on,
                 '${widget.person.region}, ${widget.person.city}'),
             _buildInfoRow(Icons.local_post_office,
@@ -153,7 +154,7 @@ void _saveRequest(Request newRequest) async {
     return Card(
       elevation: 4.0,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -165,7 +166,7 @@ void _saveRequest(Request newRequest) async {
                 color: Theme.of(context).primaryColor,
               ),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             _buildToggleSwitch(
               title: 'Secondary Request',
               value: isRepeat,
@@ -199,7 +200,7 @@ void _saveRequest(Request newRequest) async {
     return Card(
       elevation: 4.0,
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -211,10 +212,10 @@ void _saveRequest(Request newRequest) async {
                 color: Theme.of(context).primaryColor,
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             TextFormField(
               maxLines: 3, // Multi-line text field for longer comments
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Add your comments here',
                 hintText: 'Enter any additional information or comments',
                 border: OutlineInputBorder(),
@@ -233,7 +234,7 @@ void _saveRequest(Request newRequest) async {
         onPressed: () {
           saveRequestToFirebase();
         },
-        child: Text('Submit New Request'),
+        child: const Text('Submit New Request'),
       ),
     );
   }
@@ -244,8 +245,8 @@ void _saveRequest(Request newRequest) async {
     return Row(
       children: <Widget>[
         Icon(icon, color: Theme.of(context).primaryColor),
-        SizedBox(width: 8),
-        Text(text, style: TextStyle(fontSize: 16.0)),
+        const SizedBox(width: 8),
+        Text(text, style: const TextStyle(fontSize: 16.0)),
       ],
     );
   }
@@ -276,7 +277,7 @@ void _saveRequest(Request newRequest) async {
       decoration: InputDecoration(
         labelText: labelText,
         errorText: errorText,
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
       ),
       onChanged: onChanged,
     );

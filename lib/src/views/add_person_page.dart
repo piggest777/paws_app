@@ -4,6 +4,8 @@ import 'package:paws_app/src/views/create_request_page.dart';
 import '../models/person.dart';
 
 class AddPersonPage extends StatefulWidget {
+  const AddPersonPage({super.key});
+
   @override
   _AddPersonPageState createState() => _AddPersonPageState();
 }
@@ -26,7 +28,7 @@ class _AddPersonPageState extends State<AddPersonPage> {
         title: const Text("Add New Person"),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -40,36 +42,36 @@ class _AddPersonPageState extends State<AddPersonPage> {
                       value!.isEmpty ? 'Please enter a name' : null,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Surname'),
+                  decoration: const InputDecoration(labelText: 'Surname'),
                   onChanged: (value) => surname = value,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter a surname' : null,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Region'),
+                  decoration: const InputDecoration(labelText: 'Region'),
                   onChanged: (value) => region = value,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter a region' : null,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'City'),
+                  decoration: const InputDecoration(labelText: 'City'),
                   onChanged: (value) => city = value,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter a city' : null,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Nova post branch'),
+                  decoration: const InputDecoration(labelText: 'Nova post branch'),
                   onChanged: (value) => novaPostBranch = value,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter a nova post branch' : null,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Phone'),
+                  decoration: const InputDecoration(labelText: 'Phone'),
                   onChanged: (value) => phone = value,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter a phone' : null,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -82,7 +84,7 @@ class _AddPersonPageState extends State<AddPersonPage> {
                                 _addPersonAndProceed(true);
                               }
                             },
-                            child: Text('Add and Create Request'),
+                            child: const Text('Add and Create Request'),
                           ),
                           ElevatedButton(
                             onPressed: () {
@@ -90,7 +92,7 @@ class _AddPersonPageState extends State<AddPersonPage> {
                                 _addPersonAndProceed(false);
                               }
                             },
-                            child: Text('Just add'),
+                            child: const Text('Just add'),
                           ),
                         ],
                       ),

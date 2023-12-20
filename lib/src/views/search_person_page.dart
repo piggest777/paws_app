@@ -6,6 +6,8 @@ import 'package:paws_app/src/views/create_request_page.dart';
 import 'package:paws_app/src/views/view_components/person_card.dart';
 
 class SearchPersonPage extends StatefulWidget {
+  const SearchPersonPage({super.key});
+
   @override
   State<SearchPersonPage> createState() => _SearchPersonPageState();
 }
@@ -26,14 +28,14 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Search People"),
+        title: const Text("Search People"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
             TextField(
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Search Person',
                 suffixIcon: Icon(Icons.search),
               ),
@@ -58,10 +60,10 @@ class _SearchPersonPageState extends State<SearchPersonPage> {
               ),
             ),
             ElevatedButton(
-              child: Text('Add New Person'),
+              child: const Text('Add New Person'),
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => AddPersonPage()),
+                  MaterialPageRoute(builder: (context) => const AddPersonPage()),
                 );
               },
             )

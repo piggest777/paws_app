@@ -13,8 +13,7 @@ class BoxDetailsPage extends StatefulWidget {
   final String? boxId; // ID from QR code
   final Request? request;
 
-  BoxDetailsPage({Key? key, this.box, this.boxId, this.request})
-      : super(key: key);
+  const BoxDetailsPage({super.key, this.box, this.boxId, this.request});
 
   @override
   _BoxDetailsPageState createState() => _BoxDetailsPageState();
@@ -83,8 +82,8 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
             selectedSize = fetchedBox.size;
             selectedType = fetchedBox.type;
             selectedStatus = fetchedBox.status;
-            comment = fetchedBox.comment ?? '';
-            _commentController.text = fetchedBox.comment ?? '';
+            comment = fetchedBox.comment;
+            _commentController.text = fetchedBox.comment;
             requestName = requestSnapshot.data()!['name'];
             fetchPersonDetails(request?.personId);
             isLoading = false;
@@ -132,7 +131,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Request details not available')),
+      const SnackBar(content: Text('Request details not available')),
     );
   }
 }
@@ -140,16 +139,16 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Box Details')),
+      appBar: AppBar(title: const Text('Box Details')),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             if (box != null || boxId != null)
               Screenshot(
-                  child: _buildQRCode(box?.id ?? boxId!),
-                  controller: _screenshotController),
-            SizedBox(height: 10),
+                  controller: _screenshotController,
+                  child: _buildQRCode(box?.id ?? boxId!)),
+            const SizedBox(height: 10),
             if (requestName != null)
               Center(
                 child: Padding(
@@ -158,23 +157,23 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                     children: [
                       Text(
                         '$requestName',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                                             Text(
                         'Box #${box?.boxID}',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ),
               ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             _buildBoxDetailsCard(),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             _buildStatusCard(),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             _buildCommentSection(),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             if (box != null &&
                 request != null &&
                 person != null) // Check if both objects are created
@@ -183,12 +182,12 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                   children: [
                     ElevatedButton(
                       onPressed: _createAndSharePdf,
-                      child: Text('Create and Share PDF'),
+                      child: const Text('Create and Share PDF'),
                     ),
                     if(boxId != null) 
                     ElevatedButton(
                       onPressed: () => _navigateToRequestDetails(context),
-                      child: Text('View Request Details'),
+                      child: const Text('View Request Details'),
                       ),
                   ],
                 ),
@@ -222,18 +221,18 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
 
   Widget _buildBoxDetailsCard() {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       child: IntrinsicHeight(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 10.0),
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
                     DropdownButton<BoxSize>(
                       value: selectedSize,
                       onChanged: (BoxSize? newValue) {
@@ -254,14 +253,14 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                 ),
               ),
             ),
-            VerticalDivider(width: 1, thickness: 1),
+            const VerticalDivider(width: 1, thickness: 1),
             Expanded(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 10.0),
+                padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
                     DropdownButton<BoxType>(
                       value: selectedType,
                       onChanged: (BoxType? newValue) {
@@ -327,14 +326,14 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
 
   Widget _buildStatusCard() {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       child: Padding(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             IconButton(
-              icon: Icon(Icons.chevron_left),
+              icon: const Icon(Icons.chevron_left),
               onPressed:
                   selectedStatus != null ? () => _changeStatus(-1) : null,
             ),
@@ -364,7 +363,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.chevron_right),
+              icon: const Icon(Icons.chevron_right),
               onPressed: selectedStatus != null ? () => _changeStatus(1) : null,
             ),
           ],
@@ -400,7 +399,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     } else {
       // Handle case where box ID is null
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Error: Box ID is not available'),
           backgroundColor: Colors.red,
         ),
@@ -410,24 +409,24 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
 
   Widget _buildCommentSection() {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
       child: Padding(
-        padding: EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text('Comments',
+            const Text('Comments',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             isEditMode
                 ? TextFormField(
                     controller: _commentController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Enter your comment',
                     ),
                     maxLines: null, // Allows the input to expand as needed
                   )
                 : Text(comment ?? 'No comment', softWrap: true),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Center(
               child: ElevatedButton(
                 onPressed: isEditMode ? _saveComment : _enableEditMode,
@@ -461,7 +460,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
           isEditMode = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Comment updated successfully'),
             backgroundColor: Colors.green,
           ),
@@ -476,7 +475,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Comment cannot be empty'),
           backgroundColor: Colors.orange,
         ),

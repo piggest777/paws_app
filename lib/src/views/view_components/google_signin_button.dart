@@ -40,7 +40,7 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                   await _authService.signInWithGoogle();
                   if (mounted) {
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (context) => RequestsPage()),
+                      MaterialPageRoute(builder: (context) => const RequestsPage()),
                     );
                   } // Navigate to ProductList after successful login.
                 } catch (e) {

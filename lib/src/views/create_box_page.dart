@@ -5,7 +5,7 @@ import 'package:paws_app/src/models/box.dart'; // Import your Box model
 class CreateBoxPage extends StatefulWidget {
   final String requestId;
 
-  CreateBoxPage({Key? key, required this.requestId}) : super(key: key);
+  const CreateBoxPage({super.key, required this.requestId});
 
   @override
   _CreateBoxPageState createState() => _CreateBoxPageState();
@@ -19,17 +19,17 @@ class _CreateBoxPageState extends State<CreateBoxPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create New Box'),
+        title: const Text('Create New Box'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               DropdownButton<BoxSize>(
                 value: _selectedSize,
-                hint: Text('Select Size'),
+                hint: const Text('Select Size'),
                 items: BoxSize.values.map((size) {
                   return DropdownMenuItem(
                     value: size,
@@ -40,10 +40,10 @@ class _CreateBoxPageState extends State<CreateBoxPage> {
                   setState(() => _selectedSize = size);
                 },
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               DropdownButton<BoxType>(
                 value: _selectedType,
-                hint: Text('Select Type'),
+                hint: const Text('Select Type'),
                 items: BoxType.values.map((type) {
                   return DropdownMenuItem(
                     value: type,
@@ -54,10 +54,10 @@ class _CreateBoxPageState extends State<CreateBoxPage> {
                   setState(() => _selectedType = type);
                 },
               ),
-              SizedBox(height: 24.0),
+              const SizedBox(height: 24.0),
               ElevatedButton(
                 onPressed: () => _saveBoxAndNavigateBack(context),
-                child: Text('Save'),
+                child: const Text('Save'),
               ),
             ],
           ),
@@ -123,11 +123,11 @@ void _showErrorDialog(BuildContext context, String message) {
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: Text('Error'),
+      title: const Text('Error'),
       content: Text(message),
       actions: <Widget>[
         TextButton(
-          child: Text('Okay'),
+          child: const Text('Okay'),
           onPressed: () {
             Navigator.of(ctx).pop();
           },

@@ -6,27 +6,27 @@ import 'package:paws_app/src/views/login_view.dart';
 class SettingsPage extends StatelessWidget {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  SettingsPage({Key? key}) : super(key: key);
+  SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     User? user = _auth.currentUser;
-    AuthService _authService = AuthService();
+    AuthService authService = AuthService();
 
     _logout() async {
-      await _authService.signOut();
+      await authService.signOut();
     Navigator.of(context).pushAndRemoveUntil(
-    MaterialPageRoute(builder: (context) => LoginPage()),
+    MaterialPageRoute(builder: (context) => const LoginPage()),
     (Route<dynamic> route) => false,
   );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: const Text('Settings'),
       ),
       body: user == null
-          ? Center(child: Text('Not logged in'))
+          ? const Center(child: Text('Not logged in'))
           : Center(
             child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -38,16 +38,16 @@ class SettingsPage extends StatelessWidget {
                           user.photoURL ?? 'https://via.placeholder.com/150'),
                       radius: 50,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(user.displayName ?? 'No Name'),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(user.email ?? 'No Email'),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: ()  {
                         _logout();
                       },
-                      child: Text('Logout'),
+                      child: const Text('Logout'),
                     ),
                   ],
                 ),
