@@ -78,6 +78,7 @@ void _saveBoxAndNavigateBack(BuildContext context) async {
       size: _selectedSize!,
       type: _selectedType!,
       status: BoxStatus.created,
+      location: BoxLocation.office,
       comment: ''
     );
 

@@ -39,9 +39,12 @@ void _onQRViewCreated(QRViewController controller) {
     final code = scanData.code;
     if (code != null && _isValidFirebaseId(code)) {
       controller.pauseCamera();
-      Navigator.pop(context, code); // Return the scanned code
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context, code); // Return the scanned code
+      } else {
+        print('Cannot pop the current route');
+      }
     } else {
-      // Optionally, handle invalid code
       print('Scanned code is not a valid Firebase ID');
     }
   });

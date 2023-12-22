@@ -68,7 +68,7 @@ Widget _buildBoxListItem(BuildContext context, Box box) {
     ),
     onTap: () {
       Navigator.of(context).push(MaterialPageRoute(
-        builder: (context) => BoxDetailsPage(boxId: box.id),
+        builder: (context) => BoxDetailsPage(box: box, request: request),
       ));
     },
   );

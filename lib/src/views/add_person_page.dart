@@ -60,7 +60,9 @@ class _AddPersonPageState extends State<AddPersonPage> {
                       value!.isEmpty ? 'Please enter a city' : null,
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: 'Nova post branch'),
+                  initialValue: 'НП-', // Prefill with "НП-"
+                  decoration:
+                      const InputDecoration(labelText: 'Nova Post Branch'),
                   onChanged: (value) => novaPostBranch = value,
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter a nova post branch' : null,

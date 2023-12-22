@@ -27,6 +27,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   BoxSize? selectedSize;
   BoxType? selectedType;
   BoxStatus? selectedStatus;
+  BoxLocation? selectedLocation;
   final TextEditingController _commentController = TextEditingController();
   final _screenshotController = ScreenshotController();
   bool isEditMode = false;
@@ -51,6 +52,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
       selectedSize = widget.box?.size;
       selectedType = widget.box?.type;
       selectedStatus = widget.box?.status ?? BoxStatus.created;
+      selectedLocation = widget.box?.location ?? BoxLocation.office;
       comment = widget.box?.comment ?? '';
       requestName = widget.request?.name;
       _commentController.text = widget.box?.comment ?? '';
@@ -82,6 +84,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
             selectedSize = fetchedBox.size;
             selectedType = fetchedBox.type;
             selectedStatus = fetchedBox.status;
+            selectedLocation = fetchedBox.location;
             comment = fetchedBox.comment;
             _commentController.text = fetchedBox.comment;
             requestName = requestSnapshot.data()!['name'];
@@ -123,18 +126,18 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   }
 
   void _navigateToRequestDetails(BuildContext context) {
-  if (request != null) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => RequestDetailsPage(request: request!),
-      ),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Request details not available')),
-    );
+    if (request != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => RequestDetailsPage(request: request!),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Request details not available')),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -156,12 +159,14 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                   child: Column(
                     children: [
                       Text(
-                        '$requestName',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        '${request?.name ?? ''} ${request?.surname ?? ''}',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                                            Text(
+                      Text(
                         'Box #${box?.boxID}',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -184,10 +189,10 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                       onPressed: _createAndSharePdf,
                       child: const Text('Create and Share PDF'),
                     ),
-                    if(boxId != null) 
-                    ElevatedButton(
-                      onPressed: () => _navigateToRequestDetails(context),
-                      child: const Text('View Request Details'),
+                    if (boxId != null)
+                      ElevatedButton(
+                        onPressed: () => _navigateToRequestDetails(context),
+                        child: const Text('View Request Details'),
                       ),
                   ],
                 ),
@@ -219,80 +224,138 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     );
   }
 
-  Widget _buildBoxDetailsCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
-      child: IntrinsicHeight(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: <Widget>[
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
-                    DropdownButton<BoxSize>(
-                      value: selectedSize,
-                      onChanged: (BoxSize? newValue) {
-                        setState(() {
-                          selectedSize = newValue;
-                          _updateBoxSizeInFirebase(selectedSize);
-                        });
-                      },
-                      items: BoxSize.values
-                          .map<DropdownMenuItem<BoxSize>>((BoxSize value) {
-                        return DropdownMenuItem<BoxSize>(
-                          value: value,
-                          child: Text(value.toString().split('.').last),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const VerticalDivider(width: 1, thickness: 1),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
-                    DropdownButton<BoxType>(
-                      value: selectedType,
-                      onChanged: (BoxType? newValue) {
-                        setState(() {
-                          selectedType = newValue;
-                          _updateBoxTypeInFirebase(newValue);
-                        });
-                      },
-                      items: BoxType.values
-                          .map<DropdownMenuItem<BoxType>>((BoxType value) {
-                        return DropdownMenuItem<BoxType>(
-                          value: value,
-                          child: Text(value.toString().split('.').last),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+Widget _buildBoxDetailsCard() {
+  return Card(
+    margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+    child: Column(
+      children: [
+        IntrinsicHeight(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              _buildSizePicker(),
+              VerticalDivider(width: 1, thickness: 1),
+              _buildTypePicker(),
+            ],
+          ),
         ),
+          _buildLocationPicker(),
+      ],
+    ),
+  );
+}
+
+  Widget _buildSizePicker() {
+  return Expanded(
+    child: Padding(
+      padding: EdgeInsets.symmetric(vertical: 5.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
+          DropdownButton<BoxSize>(
+            value: selectedSize,
+            onChanged: (BoxSize? newValue) {
+              setState(() {
+                selectedSize = newValue;
+                _updateBoxSizeInFirebase(selectedSize);
+              });
+            },
+            items: BoxSize.values.map<DropdownMenuItem<BoxSize>>((BoxSize value) {
+              return DropdownMenuItem<BoxSize>(
+                value: value,
+                child: Text(value.toString().split('.').last),
+              );
+            }).toList(),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+
+Widget _buildTypePicker() {
+  return Expanded(
+    child: Padding(
+      padding: EdgeInsets.symmetric(vertical: 5.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
+          DropdownButton<BoxType>(
+            value: selectedType,
+            onChanged: (BoxType? newValue) {
+              setState(() {
+                selectedType = newValue;
+                _updateBoxTypeInFirebase(selectedType);
+              });
+            },
+            items: BoxType.values.map<DropdownMenuItem<BoxType>>((BoxType value) {
+              return DropdownMenuItem<BoxType>(
+                value: value,
+                child: Text(value.toString().split('.').last),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildLocationPicker() {
+  return Visibility(
+    visible: selectedStatus != BoxStatus.sended &&
+             selectedStatus != BoxStatus.recived &&
+             selectedStatus != BoxStatus.rapported,
+    child: Padding(
+      padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            flex: 2,
+            child: Text(
+              'Location: ',
+              style: TextStyle(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.right,
+            ),
+          ),
+          SizedBox(width: 8), // Spacer between text and dropdown
+          Expanded(
+            flex: 3,
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<BoxLocation>(
+                value: selectedLocation,
+                isExpanded: true,
+                onChanged: (BoxLocation? newValue) {
+                  setState(() {
+                    selectedLocation = newValue;
+                    _updateBoxLocationInFirebase(selectedLocation!);
+                  });
+                },
+                items: BoxLocation.values.map<DropdownMenuItem<BoxLocation>>((BoxLocation value) {
+                  return DropdownMenuItem<BoxLocation>(
+                    value: value,
+                    child: Text(value.toString().split('.').last),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   void _updateBoxSizeInFirebase(BoxSize? newSize) {
     if (box?.id != null && newSize != null) {
+      String typeAsString = newSize.toString().split('.').last;
       FirebaseFirestore.instance
           .collection('boxes')
           .doc(box!.id)
-          .update({'size': newSize.toString()})
+          .update({'size': typeAsString})
           .then((_) => _showSnackbar('Size updated successfully', Colors.green))
           .catchError((error) =>
               _showSnackbar('Error updating size: $error', Colors.red));
@@ -303,10 +366,11 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
 
   void _updateBoxTypeInFirebase(BoxType? newType) {
     if (box?.id != null && newType != null) {
+      String typeAsString = newType.toString().split('.').last;
       FirebaseFirestore.instance
           .collection('boxes')
           .doc(box!.id)
-          .update({'type': newType.toString()})
+          .update({'type': typeAsString})
           .then((_) => _showSnackbar('Type updated successfully', Colors.green))
           .catchError((error) =>
               _showSnackbar('Error updating type: $error', Colors.red));
@@ -384,10 +448,11 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
 
   void _updateStatusInFirebase(BoxStatus newStatus) {
     if (box?.id != null) {
+      String typeAsString = newStatus.toString().split('.').last;
       FirebaseFirestore.instance
           .collection('boxes')
           .doc(box!.id)
-          .update({'status': newStatus.toString()}).catchError((error) {
+          .update({'status': typeAsString}).catchError((error) {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -407,6 +472,24 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     }
   }
 
+
+
+  void _updateBoxLocationInFirebase(BoxLocation newLocation) {
+    if (box?.id != null) {
+      String typeAsString = newLocation.toString().split('.').last;
+      FirebaseFirestore.instance
+          .collection('boxes')
+          .doc(box!.id)
+          .update({'location': typeAsString})
+          .then((_) =>
+              _showSnackbar('Location updated successfully', Colors.green))
+          .catchError((error) =>
+              _showSnackbar('Error updating location: $error', Colors.red));
+    } else {
+      _showSnackbar('Error: Box ID is not available', Colors.red);
+    }
+  }
+
   Widget _buildCommentSection() {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
@@ -415,25 +498,33 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Text('Comments',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Comments',
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: isEditMode ? null : _enableEditMode,
+                ),
+              ],
+            ),
             isEditMode
                 ? TextFormField(
                     controller: _commentController,
                     decoration: const InputDecoration(
                       hintText: 'Enter your comment',
                     ),
-                    maxLines: null, // Allows the input to expand as needed
+                    maxLines: null,
                   )
                 : Text(comment ?? 'No comment', softWrap: true),
-            const SizedBox(height: 10),
-            Center(
-              child: ElevatedButton(
-                onPressed: isEditMode ? _saveComment : _enableEditMode,
-                child: Text(isEditMode ? 'Save Comment' : 'Edit'),
-              ),
-            ),
-            // Display existing comments here
+            isEditMode
+                ? ElevatedButton(
+                    onPressed: _saveComment,
+                    child: const Text('Save'),
+                  )
+                : const SizedBox.shrink(),
           ],
         ),
       ),
@@ -448,38 +539,38 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   }
 
   void _saveComment() {
-    // Implement the logic to save the comment to Firebase
-    final String commentText = _commentController.text;
+  final String commentText = _commentController.text;
 
-    if (commentText.isNotEmpty && box != null) {
-      FirebaseFirestore.instance.collection('boxes').doc(box!.id).update({
-        'comment': commentText,
-      }).then((_) {
-        setState(() {
-          comment = commentText; // Update the comment state
-          isEditMode = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Comment updated successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }).catchError((error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating comment: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
+  if (box != null) {
+    FirebaseFirestore.instance.collection('boxes').doc(box!.id).update({
+      'comment': commentText,
+    }).then((_) {
+      setState(() {
+        comment = commentText; // Update the comment state
+        isEditMode = false;
       });
-    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Comment cannot be empty'),
-          backgroundColor: Colors.orange,
+          content: Text('Comment updated successfully'),
+          backgroundColor: Colors.green,
         ),
       );
-    }
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating comment: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Error: Box ID is not available'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
+
 }

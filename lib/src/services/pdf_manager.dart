@@ -120,7 +120,7 @@ Future<void> createAndSharePdf() async {
 
   // Save and share PDF
   final output = await getTemporaryDirectory();
-  final file = File("${output.path}/box_details.pdf");
+  final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? request!.surname + '_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
   await file.writeAsBytes(await pdf.save());
   Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
 }
