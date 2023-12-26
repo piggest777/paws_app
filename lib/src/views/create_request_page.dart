@@ -58,6 +58,34 @@ class _RequestCreationPageState extends State<RequestCreationPage> {
 
 void _saveRequest(Request newRequest) async {
   try {
+
+    // Initialize boxCounts with all statuses set to 0
+    Map<String, int> initialBoxCounts = {
+      'created': 0,
+      'packing': 0,
+      'packed': 0,
+      'storage': 0,
+      'sended': 0,
+      'recived': 0,
+      'rapported': 0,
+    };
+
+    newRequest = Request(
+      id: newRequest.id, // keep existing ID
+      personId: newRequest.personId,
+      name: newRequest.name,
+      surname: newRequest.surname,
+      region: newRequest.region,
+      city: newRequest.city,
+      isUrgent: newRequest.isUrgent,
+      isRepeat: newRequest.isRepeat,
+      isProxy: newRequest.isProxy,
+      organizationName: newRequest.organizationName,
+      comments: newRequest.comments,
+      timestamp: newRequest.timestamp,
+      boxStatusCounts: initialBoxCounts, // set initial boxCounts
+    );
+
     DocumentReference docRef = await FirebaseFirestore.instance.collection('requests').add(newRequest.toMap());
     
         String requestId = docRef.id;
@@ -74,7 +102,8 @@ void _saveRequest(Request newRequest) async {
       isRepeat: newRequest.isRepeat,
       isProxy: newRequest.isProxy,
       organizationName: newRequest.organizationName,
-      comments: newRequest.comments
+      comments: newRequest.comments,
+      boxStatusCounts: initialBoxCounts,
     );
       Navigator.of(context).push(
       MaterialPageRoute(
@@ -168,7 +197,7 @@ void _saveRequest(Request newRequest) async {
             ),
             const SizedBox(height: 5),
             _buildToggleSwitch(
-              title: 'Secondary Request',
+              title: 'Repeated Request',
               value: isRepeat,
               onChanged: (value) => setState(() => isRepeat = value),
             ),

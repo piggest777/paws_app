@@ -1,0 +1,73 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // Import this package for date formatting
+import 'package:paws_app/src/models/box.dart';
+import 'package:paws_app/src/views/box_detail_page.dart';
+
+class BoxCard extends StatelessWidget {
+  final Box box;
+
+  const BoxCard({Key? key, required this.box}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+  leading: CircleAvatar(
+    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+    child: Text(
+      box.boxID.toString(),
+      style: TextStyle(
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).primaryColor,
+      ),
+    ),
+  ),
+  title: Row(
+    children: <Widget>[
+      _getIconForStatus(box.status),
+      SizedBox(width: 10),
+      Text(
+        box.requesterName ?? 'Unknown', // Fallback to 'Unknown' if null
+        style: TextStyle(fontSize: 14),
+      ),
+    ],
+  ),
+  subtitle: Text(
+    'Created: ${DateFormat('yyyy-MM-dd').format(box.creationDate ?? DateTime.now())}', // Fallback to current date if null
+    style: TextStyle(fontSize: 12),
+  ),
+  trailing: Icon(Icons.chevron_right),
+  onTap: () {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => BoxDetailsPage(boxId: box.id,),
+    ));
+  },
+);
+
+  }
+
+Icon _getIconForStatus(BoxStatus status) {
+  switch (status) {
+    case BoxStatus.created:
+      return const Icon(Icons.create, color: Colors.lightBlue);
+    case BoxStatus.packing:
+      return const Icon(Icons.work, color: Colors.lightGreen);
+    case BoxStatus.packed:
+      return const Icon(Icons.inventory, color: Colors.amber);
+    case BoxStatus.storage:
+      return const Icon(Icons.store, color: Colors.deepPurple);
+    case BoxStatus.sended:
+      return const Icon(Icons.local_shipping, color: Colors.teal);
+    case BoxStatus.recived:
+      return const Icon(Icons.home_filled, color: Colors.brown);
+    case BoxStatus.rapported:
+      return const Icon(Icons.check_circle, color: Colors.pinkAccent);
+    default:
+      return const Icon(Icons.help_outline, color: Colors.grey);
+  }
+}
+
+  String _trimEnumName(String enumString) {
+    return enumString.split('.').last;
+  }
+}
+

@@ -36,7 +36,7 @@ class _RequestDetailsPageState extends State<RequestDetailsPage> {
 
   void _navigateToCreateBoxPage(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => CreateBoxPage(requestId: widget.request.id)),
+      MaterialPageRoute(builder: (context) => CreateBoxPage(requestId: widget.request.id, requesterName: '${widget.request.name} ${widget.request.surname}')),
     );
   }
 
@@ -117,14 +117,14 @@ Widget _buildRequestSummary() {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Urgency and Secondary Status
+              // Urgency and repeated Status
               if (widget.request.isUrgent || widget.request.isRepeat) 
                 Wrap(
                   children: [
                     if (widget.request.isUrgent)
                       _buildStatusTag("Urgent", Colors.redAccent),
                     if (widget.request.isRepeat)
-                      _buildStatusTag("Secondary", Colors.orangeAccent),
+                      _buildStatusTag("Repeated", Colors.orangeAccent),
                   ],
                 ),
               // Comments

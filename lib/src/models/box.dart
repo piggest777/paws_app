@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 enum BoxSize { small, large }
 enum BoxType { cats, dogs, puppy, mix, medical, other }
 enum BoxStatus { created, packing, packed, storage, sended, recived, rapported }
@@ -5,8 +7,10 @@ enum BoxLocation {office, elevator, basement }
 
 class Box {
   String id; // Firebase document ID
-  String boxID; // Simplified box ID
+  int boxID; // Simplified box ID
   String requestId; // Request document ID this box is connected to
+  DateTime? creationDate; // Field for creation date
+  String requesterName; // Field for requester's name
   BoxSize size;
   BoxType type;
   BoxStatus status;
@@ -21,7 +25,10 @@ class Box {
     required this.type, 
     required this.status,
     required this.location,
-    required this.comment});
+    required this.comment,
+    this.creationDate,
+    required this.requesterName,
+    });
 
   // Method to convert box object to a map, useful for Firebase
   Map<String, dynamic> toMap() {
@@ -33,7 +40,9 @@ class Box {
       'type': type.toString(),
       'status': status.toString(),
       'location': location.toString(),
-      'comment': comment
+      'comment': comment,
+      'creationDate': creationDate ?? FieldValue.serverTimestamp(), // Use server timestamp if no date is provided
+      'requesterName': requesterName,
     };
   }
 
@@ -59,7 +68,9 @@ class Box {
       (e) => e.toString() == 'BoxLocation.' + (map['location'] ?? 'office'), // Default to office if location is not found
       orElse: () => BoxLocation.office,
     ),
-    comment: map['comment'] ?? ''
+    comment: map['comment'] ?? '',
+    creationDate: map['creationDate'] is Timestamp ? (map['creationDate'] as Timestamp).toDate() : null,
+    requesterName: map['requesterName'] ?? '',
   );
   }
 }

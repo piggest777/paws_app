@@ -4,8 +4,9 @@ import 'package:paws_app/src/models/box.dart'; // Import your Box model
 
 class CreateBoxPage extends StatefulWidget {
   final String requestId;
+  final String requesterName; 
 
-  const CreateBoxPage({super.key, required this.requestId});
+  const CreateBoxPage({super.key, required this.requestId, required this.requesterName});
 
   @override
   _CreateBoxPageState createState() => _CreateBoxPageState();
@@ -73,13 +74,15 @@ void _saveBoxAndNavigateBack(BuildContext context) async {
     // Create a new box object with the current counter as boxID
     Box newBox = Box(
       id: '', 
-      boxID: currentCounter.toString(),
+      boxID: currentCounter,
       requestId: widget.requestId, 
       size: _selectedSize!,
       type: _selectedType!,
       status: BoxStatus.created,
       location: BoxLocation.office,
-      comment: ''
+      comment: '',
+      creationDate: DateTime.now(), // Set the creation date to the current date and time
+      requesterName: widget.requesterName, // Use the requester's name passed in the widget
     );
 
     // Proceed with saving the new box
@@ -107,18 +110,37 @@ Future<int> _getCurrentCounter() async {
 
 
 Future<void> _addBoxToFirebase(Box box, int currentCounter) async {
-  var collection = FirebaseFirestore.instance.collection('boxes');
+  var boxesCollection = FirebaseFirestore.instance.collection('boxes');
   
-  await collection.add(box.toMap()).then((_) async {
+  await boxesCollection.add(box.toMap()).then((boxRef) async {
     // Increment the counter in Firebase
     await FirebaseFirestore.instance.collection('counters').doc('boxId').update({
       'current': currentCounter + 1
     });
+
+    // Update the request's box count for 'created' status
+    await _incrementCreatedBoxCountInRequest(box.requestId);
   }).catchError((error) {
     throw Exception('Failed to create box: $error');
   });
 }
 
+Future<void> _incrementCreatedBoxCountInRequest(String requestId) async {
+  var requestRef = FirebaseFirestore.instance.collection('requests').doc(requestId);
+  return FirebaseFirestore.instance.runTransaction((transaction) async {
+    var snapshot = await transaction.get(requestRef);
+
+    if (!snapshot.exists) {
+      throw Exception('Request does not exist!');
+    }
+
+    // Update the box count for the 'created' status
+    int currentCount = snapshot.data()?['boxCounts']['created'] ?? 0;
+    transaction.update(requestRef, {
+      'boxCounts.created': currentCount + 1
+    });
+  });
+}
 
 void _showErrorDialog(BuildContext context, String message) {
   showDialog(

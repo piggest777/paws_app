@@ -312,22 +312,19 @@ Widget _buildLocationPicker() {
     child: Padding(
       padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center, // Center the Row content
         children: <Widget>[
-          Expanded(
-            flex: 2,
-            child: Text(
-              'Location: ',
-              style: TextStyle(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.right,
-            ),
+          Text(
+            'Location: ',
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
           SizedBox(width: 8), // Spacer between text and dropdown
-          Expanded(
-            flex: 3,
+          // Limit the width of the dropdown list
+          Container(
+            width: 100, // Adjust the width as needed
             child: DropdownButtonHideUnderline(
               child: DropdownButton<BoxLocation>(
                 value: selectedLocation,
-                isExpanded: true,
                 onChanged: (BoxLocation? newValue) {
                   setState(() {
                     selectedLocation = newValue;
@@ -408,10 +405,11 @@ Widget _buildLocationPicker() {
                   isExpanded: true,
                   onChanged: selectedStatus != null
                       ? (BoxStatus? newValue) {
+                        BoxStatus? oldStatus = selectedStatus;
                           setState(() {
                             selectedStatus = newValue;
                           });
-                          _updateStatusInFirebase(newValue!);
+                          _updateStatusInFirebase(newValue!, oldStatus);
                         }
                       : null,
                   items: BoxStatus.values
@@ -437,17 +435,19 @@ Widget _buildLocationPicker() {
   }
 
   void _changeStatus(int direction) {
+    BoxStatus? oldStatus = selectedStatus;
     int currentIndex = BoxStatus.values.indexOf(selectedStatus!);
     int newIndex = (currentIndex + direction) % BoxStatus.values.length;
     if (newIndex < 0) newIndex = BoxStatus.values.length - 1;
     setState(() {
       selectedStatus = BoxStatus.values[newIndex];
     });
-    _updateStatusInFirebase(BoxStatus.values[newIndex]);
+    _updateStatusInFirebase(BoxStatus.values[newIndex], oldStatus);
   }
 
-  void _updateStatusInFirebase(BoxStatus newStatus) {
+  void _updateStatusInFirebase(BoxStatus newStatus, BoxStatus? oldStatus) async {
     if (box?.id != null) {
+      await _updateBoxCountsInRequestDocument(newStatus, oldStatus);
       String typeAsString = newStatus.toString().split('.').last;
       FirebaseFirestore.instance
           .collection('boxes')
@@ -460,7 +460,7 @@ Widget _buildLocationPicker() {
             backgroundColor: Colors.red,
           ),
         );
-      });
+      });      
     } else {
       // Handle case where box ID is null
       ScaffoldMessenger.of(context).showSnackBar(
@@ -471,6 +471,33 @@ Widget _buildLocationPicker() {
       );
     }
   }
+
+Future<void> _updateBoxCountsInRequestDocument(BoxStatus newStatus, BoxStatus? oldStatus) async {
+  if (box?.requestId != null && oldStatus != null) {
+    DocumentReference requestDocRef = FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
+
+    // Fetch the current box counts from the request document
+    var requestSnapshot = await requestDocRef.get();
+    var requestData = requestSnapshot.data() as Map<String, dynamic>; // Explicit cast
+    Map<String, int> boxCounts = requestData.containsKey('boxStatusCounts')
+                                  ? Map<String, int>.from(requestData['boxStatusCounts'])
+                                  : {};
+
+    // Update the count for the old and new status
+    String newStatusKey = newStatus.toString().split('.').last;
+    String oldStatusKey = oldStatus.toString().split('.').last;
+
+    boxCounts[newStatusKey] = (boxCounts[newStatusKey] ?? 0) + 1;
+    boxCounts[oldStatusKey] = (boxCounts[oldStatusKey] ?? 1) - 1;
+
+    // Ensure counts do not go below zero
+    boxCounts[oldStatusKey] = boxCounts[oldStatusKey]!.isNegative ? 0 : boxCounts[oldStatusKey]!;
+
+    // Write back the updated counts to the request document
+    await requestDocRef.update({'boxStatusCounts': boxCounts});
+  }
+}
+
 
 
 

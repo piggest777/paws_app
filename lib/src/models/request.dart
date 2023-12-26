@@ -13,6 +13,7 @@ class Request {
   String? organizationName;
   String comments;
   Timestamp? timestamp; 
+  Map<String, int> boxStatusCounts;
 
   Request({
     required this.id,
@@ -27,6 +28,7 @@ class Request {
     this.organizationName,
     required this.comments,
     this.timestamp, 
+    this.boxStatusCounts = const {},
   });
 
   Map<String, dynamic> toMap() {
@@ -41,7 +43,8 @@ class Request {
       'isProxy': isProxy,
       'organizationName': isProxy ? organizationName : null,
       'comments': comments,
-      'timestamp': timestamp ?? FieldValue.serverTimestamp(), // Use server timestamp
+      'timestamp': timestamp ?? FieldValue.serverTimestamp(),
+      'boxStatusCounts': boxStatusCounts,
     };
   }
 
@@ -59,6 +62,7 @@ class Request {
       organizationName: map['organizationName'],
       comments: map['comments'] ?? '',
       timestamp: map['timestamp'] is Timestamp ? map['timestamp'] : null, 
+      boxStatusCounts: Map<String, int>.from(map['boxStatusCounts'] ?? {}),
     );
   }
 }

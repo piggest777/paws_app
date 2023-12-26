@@ -46,6 +46,26 @@ class PawsApp extends StatelessWidget {
               secondary: Colors
                   .white, // sets the secondary color in the colorScheme which is used as an accent color in some contexts
             ),
+                switchTheme: SwitchThemeData(
+      // // Define the thumb color when the switch is on
+      thumbColor: MaterialStateProperty.resolveWith<Color>(
+        (Set<MaterialState> states) {
+          if (states.contains(MaterialState.selected)) {
+            return myColor; // Replace 'myColor' with your color
+          }
+          return Colors.white; // Default thumb color when not selected
+        },
+      ),
+      // Define the track color when the switch is on
+      trackColor: MaterialStateProperty.resolveWith<Color>(
+        (Set<MaterialState> states) {
+          if (states.contains(MaterialState.selected)) {
+            return myColor.withOpacity(0.5); // Replace 'myColor' with your color and adjust opacity
+          }
+          return Colors.grey.withOpacity(0.5); // Default track color when not selected
+        },
+      ),
+    ),
         appBarTheme: const AppBarTheme(
           color: myColor, // sets the color of the AppBar
         ),

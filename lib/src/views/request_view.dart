@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/views/box_detail_page.dart';
+import 'package:paws_app/src/views/boxes_page.dart';
 import 'package:paws_app/src/views/qr_scan_page.dart';
 import 'package:paws_app/src/views/search_person_page.dart';
 import 'package:paws_app/src/views/settings_page.dart';
@@ -17,6 +18,7 @@ class RequestsPage extends StatefulWidget {
 
 class _RequestsPageState extends State<RequestsPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  Map<String, bool> groupExpandedState = {};
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +34,14 @@ class _RequestsPageState extends State<RequestsPage> {
           },
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.view_module),
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => BoxListView(),
+              ));
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             onPressed: _scanQRCode,
@@ -67,22 +77,35 @@ class _RequestsPageState extends State<RequestsPage> {
               String date = groupedRequests.keys.elementAt(index);
               List<Request> dailyRequests = groupedRequests[date]!;
 
+              bool isGroupExpanded = groupExpandedState[date] ?? true;
+
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      date,
-                      style:
-                          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Card(
+                    elevation: 2,
+                    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    child: ListTile(
+                      title: Text(
+                        date,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing: Icon(
+                        isGroupExpanded ? Icons.expand_less : Icons.expand_more,
+                      ),
+                      onTap: () {
+                        setState(() {
+                          groupExpandedState[date] = !isGroupExpanded;
+                        });
+                      },
                     ),
                   ),
-                  Column(
-                    children: dailyRequests
-                        .map((request) => RequestCard(request: request))
-                        .toList(),
-                  ),
+                  if (isGroupExpanded)
+                    Column(
+                      children: dailyRequests
+                          .map((request) => RequestCard(request: request))
+                          .toList(),
+                    ),
                 ],
               );
             },

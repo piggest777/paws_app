@@ -35,7 +35,7 @@ Future<void> createAndSharePdf() async {
   final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
   final ttf = pw.Font.ttf(fontData);
 
-  String boxId = box?.boxID ?? '';
+  String boxId = box?.boxID.toString() ?? '';
   String createdDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   // Create PDF page

@@ -31,6 +31,7 @@ class RequestCard extends StatelessWidget {
               _buildRequestInfo(hasOrganization),
               const Divider(),
               _buildDateAndRegion(),
+              _buildBoxStatusSummary(),
             ],
           ),
         ),
@@ -104,6 +105,55 @@ class RequestCard extends StatelessWidget {
       ],
     );
   }
+
+    Widget _buildBoxStatusSummary() {
+    Map<String, int> boxStatusCounts = request.boxStatusCounts ?? {};
+
+    return boxStatusCounts.isNotEmpty
+        ? Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Row(
+              children: boxStatusCounts.entries
+                  .where((entry) => entry.value > 0)
+                  .map((entry) => _buildStatusCount(entry.key, entry.value))
+                  .toList(),
+            ),
+          )
+        : const SizedBox.shrink();
+  }
+
+  Widget _buildStatusCount(String status, int count) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8.0),
+      child: Row(
+        children: <Widget>[
+          _statusIcon(status),
+          const SizedBox(width: 4),
+          Text('$count'),
+        ],
+      ),
+    );
+  }
+Widget _statusIcon(String status) {
+  switch (status) {
+    case 'created':
+      return const Icon(Icons.create, color: Colors.lightBlue, size: 16);
+    case 'packing':
+      return const Icon(Icons.work, color: Colors.lightGreen, size: 16);
+    case 'packed':
+      return const Icon(Icons.inventory, color: Colors.amber, size: 16);
+    case 'storage':
+      return const Icon(Icons.store, color: Colors.deepPurple, size: 16);
+    case 'sended':
+      return const Icon(Icons.local_shipping, color: Colors.teal, size: 16);
+    case 'recived':
+      return const Icon(Icons.home_filled, color: Colors.brown, size: 16);
+    case 'rapported':
+      return const Icon(Icons.check_circle, color: Colors.pinkAccent, size: 16);
+    default:
+      return const Icon(Icons.help_outline, color: Colors.grey, size: 16);
+  }
+}
 
   String _formatTimestamp(Timestamp? timestamp) {
     if (timestamp == null) {
