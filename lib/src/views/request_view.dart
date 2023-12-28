@@ -57,6 +57,7 @@ class _RequestsPageState extends State<RequestsPage> {
           }
 
           if (snapshot.hasError) {
+            print(snapshot.error);
             return const Center(child: Text('Error fetching data'));
           }
 

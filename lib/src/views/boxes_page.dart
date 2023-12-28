@@ -11,7 +11,6 @@ class BoxListView extends StatefulWidget {
 class _BoxListViewState extends State<BoxListView> {
   BoxStatus? currentFilterStatus;
   int itemCount = 0;
-  List<Box> boxes = [];
 
   @override
   Widget build(BuildContext context) {
@@ -40,42 +39,33 @@ class _BoxListViewState extends State<BoxListView> {
       ),
       body: Column(
         children: [
-          if (currentFilterStatus != null)
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'Showing $itemCount boxes with status: ${_formatStatus(currentFilterStatus!)}',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ),
+              if (currentFilterStatus != null)
+BoxCountLabel(
+  key: ValueKey(currentFilterStatus),
+  filterStatus: currentFilterStatus,
+  stream: _filteredBoxStream(),
+),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _filteredBoxStream(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  boxes = snapshot.data!.docs.map((doc) {
+                  var boxes = snapshot.data!.docs.map((doc) {
                     return Box.fromMap(
                         doc.data() as Map<String, dynamic>, doc.id);
                   }).toList();
 
-                  _updateItemCount(boxes.length); // Update the item count here
+                  return ListView.builder(
+                    itemCount: boxes.length,
+                    itemBuilder: (context, index) {
+                      return BoxCard(box: boxes[index]);
+                    },
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error fetching boxes'));
                 } else {
-                  boxes.clear();
-                  _updateItemCount(0); // Reset the item count
+                  return Center(child: Text('No boxes found'));
                 }
-
-                return boxes.isNotEmpty
-                    ? ListView.builder(
-                        itemCount: boxes.length,
-                        itemBuilder: (context, index) {
-                          return BoxCard(box: boxes[index]);
-                        },
-                      )
-                    : Center(
-                        child: Text(currentFilterStatus != null
-                            ? 'No boxes found with status ${_formatStatus(currentFilterStatus!)}'
-                            : 'No boxes found'),
-                      );
               },
             ),
           ),
@@ -121,14 +111,53 @@ class _BoxListViewState extends State<BoxListView> {
   String _formatStatus(BoxStatus status) {
     return status.toString().split('.').last;
   }
-
-void _updateItemCount(int newCount) {
-  Future.microtask(() {
-    if (mounted) {
-      setState(() {
-        itemCount = newCount;
-      });
-    }
-  });
 }
+
+class BoxCountLabel extends StatefulWidget {
+  final BoxStatus? filterStatus;
+  final Stream<QuerySnapshot> stream;
+
+  const BoxCountLabel({
+    Key? key,
+    this.filterStatus,
+    required this.stream,
+  }) : super(key: key);
+
+  @override
+  _BoxCountLabelState createState() => _BoxCountLabelState();
+}
+
+class _BoxCountLabelState extends State<BoxCountLabel> {
+  int itemCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.stream.listen((snapshot) {
+      WidgetsBinding.instance!.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            itemCount = snapshot.docs.length;
+          });
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(8.0),
+      child: Text(
+        widget.filterStatus != null
+            ? 'Showing $itemCount boxes with status: ${_formatStatus(widget.filterStatus!)}'
+            : 'Total boxes: $itemCount',
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
+  String _formatStatus(BoxStatus status) {
+    return status.toString().split('.').last;
+  }
 }
