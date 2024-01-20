@@ -31,20 +31,20 @@ class Box {
     });
 
   // Method to convert box object to a map, useful for Firebase
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'boxID': boxID, 
-      'requestId': requestId,
-      'size': size.toString(),
-      'type': type.toString(),
-      'status': status.toString(),
-      'location': location.toString(),
-      'comment': comment,
-      'creationDate': creationDate ?? FieldValue.serverTimestamp(), // Use server timestamp if no date is provided
-      'requesterName': requesterName,
-    };
-  }
+Map<String, dynamic> toMap() {
+  return {
+    'id': id,
+    'boxID': boxID,
+    'requestId': requestId,
+    'size': size.toString().split('.').last, 
+    'type': type.toString().split('.').last, 
+    'status': status.toString().split('.').last,
+    'location': location.toString().split('.').last,
+    'comment': comment,
+    'creationDate': creationDate ?? FieldValue.serverTimestamp(), // Use server timestamp if no date is provided
+    'requesterName': requesterName,
+  };
+}
 
   // Method to create a box object from a map, useful when retrieving from Firebase
   factory Box.fromMap(Map<String, dynamic> map, String id) {

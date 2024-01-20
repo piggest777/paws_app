@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:paws_app/src/utils/regions.dart';
 import 'package:paws_app/src/views/create_request_page.dart';
 import '../models/person.dart';
 
@@ -47,11 +48,23 @@ class _AddPersonPageState extends State<AddPersonPage> {
                   validator: (value) =>
                       value!.isEmpty ? 'Please enter a surname' : null,
                 ),
-                TextFormField(
-                  decoration: const InputDecoration(labelText: 'Region'),
-                  onChanged: (value) => region = value,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter a region' : null,
+                DropdownButtonFormField<String>(
+                  value: region.isEmpty ? null : region,
+                  hint: const Text('Select Region'),
+                  items: ukrainianRegions.map((String region) {
+                    return DropdownMenuItem(
+                      value: region,
+                      child: Text(region),
+                    );
+                  }).toList(),
+                  onChanged: (newValue) {
+                    setState(() {
+                      region = newValue!;
+                    });
+                  },
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Please select a region'
+                      : null,
                 ),
                 TextFormField(
                   decoration: const InputDecoration(labelText: 'City'),
@@ -80,13 +93,16 @@ class _AddPersonPageState extends State<AddPersonPage> {
                     Center(
                       child: Column(
                         children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_formKey.currentState!.validate()) {
-                                _addPersonAndProceed(true);
-                              }
-                            },
-                            child: const Text('Add and Create Request'),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  _addPersonAndProceed(true);
+                                }
+                              },
+                              child: const Text('Add and Create Request'),
+                            ),
                           ),
                           ElevatedButton(
                             onPressed: () {

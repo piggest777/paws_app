@@ -11,6 +11,8 @@ import 'dart:typed_data';
 import 'package:qr/qr.dart';
 import 'dart:ui' as ui;
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:universal_html/html.dart' as html;
 
 class PDFManager {
   final Box? box;
@@ -118,11 +120,28 @@ Future<void> createAndSharePdf() async {
     ),
   );
 
+
+    final pdfData = await pdf.save();
+
+    if (kIsWeb) {
+      // Running on the web
+      final blob = html.Blob([pdfData], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      html.window.open(url, "_blank"); // Open in new tab or window
+      html.Url.revokeObjectUrl(url); // Clean up the object URL
+    } else {
+      // Running on mobile (Android or iOS)
+      final output = await getTemporaryDirectory();
+      final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? request!.surname + '_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
+      await file.writeAsBytes(pdfData);
+      Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
+    }
+
   // Save and share PDF
-  final output = await getTemporaryDirectory();
-  final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? request!.surname + '_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
-  await file.writeAsBytes(await pdf.save());
-  Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
+  // final output = await getTemporaryDirectory();
+  // final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? request!.surname + '_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
+  // await file.writeAsBytes(await pdf.save());
+  // Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
 }
 
   Future<pw.ImageProvider?> _loadImage(String assetPath) async {

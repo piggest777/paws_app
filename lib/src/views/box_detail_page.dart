@@ -4,6 +4,7 @@ import 'package:paws_app/src/models/person.dart';
 import 'package:paws_app/src/models/request.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paws_app/src/services/pdf_manager.dart';
+import 'package:paws_app/src/utils/box_status_util.dart';
 import 'package:paws_app/src/views/request_detatil_page.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
@@ -142,7 +143,12 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Box Details')),
+      appBar: AppBar(
+        title: const Text('Box Details'),
+        actions: [
+          _buildDeleteButton(), // Place the delete button in the AppBar
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,127 +230,129 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     );
   }
 
-Widget _buildBoxDetailsCard() {
-  return Card(
-    margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
-    child: Column(
-      children: [
-        IntrinsicHeight(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              _buildSizePicker(),
-              VerticalDivider(width: 1, thickness: 1),
-              _buildTypePicker(),
-            ],
-          ),
-        ),
-          _buildLocationPicker(),
-      ],
-    ),
-  );
-}
-
-  Widget _buildSizePicker() {
-  return Expanded(
-    child: Padding(
-      padding: EdgeInsets.symmetric(vertical: 5.0),
+  Widget _buildBoxDetailsCard() {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
-          DropdownButton<BoxSize>(
-            value: selectedSize,
-            onChanged: (BoxSize? newValue) {
-              setState(() {
-                selectedSize = newValue;
-                _updateBoxSizeInFirebase(selectedSize);
-              });
-            },
-            items: BoxSize.values.map<DropdownMenuItem<BoxSize>>((BoxSize value) {
-              return DropdownMenuItem<BoxSize>(
-                value: value,
-                child: Text(value.toString().split('.').last),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-
-Widget _buildTypePicker() {
-  return Expanded(
-    child: Padding(
-      padding: EdgeInsets.symmetric(vertical: 5.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
-          DropdownButton<BoxType>(
-            value: selectedType,
-            onChanged: (BoxType? newValue) {
-              setState(() {
-                selectedType = newValue;
-                _updateBoxTypeInFirebase(selectedType);
-              });
-            },
-            items: BoxType.values.map<DropdownMenuItem<BoxType>>((BoxType value) {
-              return DropdownMenuItem<BoxType>(
-                value: value,
-                child: Text(value.toString().split('.').last),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget _buildLocationPicker() {
-  return Visibility(
-    visible: selectedStatus != BoxStatus.sended &&
-             selectedStatus != BoxStatus.recived &&
-             selectedStatus != BoxStatus.rapported,
-    child: Padding(
-      padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center, // Center the Row content
-        children: <Widget>[
-          Text(
-            'Location: ',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          SizedBox(width: 8), // Spacer between text and dropdown
-          // Limit the width of the dropdown list
-          Container(
-            width: 100, // Adjust the width as needed
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<BoxLocation>(
-                value: selectedLocation,
-                onChanged: (BoxLocation? newValue) {
-                  setState(() {
-                    selectedLocation = newValue;
-                    _updateBoxLocationInFirebase(selectedLocation!);
-                  });
-                },
-                items: BoxLocation.values.map<DropdownMenuItem<BoxLocation>>((BoxLocation value) {
-                  return DropdownMenuItem<BoxLocation>(
-                    value: value,
-                    child: Text(value.toString().split('.').last),
-                  );
-                }).toList(),
-              ),
+        children: [
+          IntrinsicHeight(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                _buildSizePicker(),
+                VerticalDivider(width: 1, thickness: 1),
+                _buildTypePicker(),
+              ],
             ),
           ),
+          _buildLocationPicker(),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
+
+  Widget _buildSizePicker() {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 5.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
+            DropdownButton<BoxSize>(
+              value: selectedSize,
+              onChanged: (BoxSize? newValue) {
+                setState(() {
+                  selectedSize = newValue;
+                  _updateBoxSizeInFirebase(selectedSize);
+                });
+              },
+              items: BoxSize.values
+                  .map<DropdownMenuItem<BoxSize>>((BoxSize value) {
+                return DropdownMenuItem<BoxSize>(
+                  value: value,
+                  child: Text(value.toString().split('.').last),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypePicker() {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 5.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
+            DropdownButton<BoxType>(
+              value: selectedType,
+              onChanged: (BoxType? newValue) {
+                setState(() {
+                  selectedType = newValue;
+                  _updateBoxTypeInFirebase(selectedType);
+                });
+              },
+              items: BoxType.values
+                  .map<DropdownMenuItem<BoxType>>((BoxType value) {
+                return DropdownMenuItem<BoxType>(
+                  value: value,
+                  child: Text(value.toString().split('.').last),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocationPicker() {
+    return Visibility(
+      visible: selectedStatus != BoxStatus.sended &&
+          selectedStatus != BoxStatus.recived &&
+          selectedStatus != BoxStatus.rapported,
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center, // Center the Row content
+          children: <Widget>[
+            Text(
+              'Location: ',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(width: 8), // Spacer between text and dropdown
+            // Limit the width of the dropdown list
+            Container(
+              width: 100, // Adjust the width as needed
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<BoxLocation>(
+                  value: selectedLocation,
+                  onChanged: (BoxLocation? newValue) {
+                    setState(() {
+                      selectedLocation = newValue;
+                      _updateBoxLocationInFirebase(selectedLocation!);
+                    });
+                  },
+                  items: BoxLocation.values
+                      .map<DropdownMenuItem<BoxLocation>>((BoxLocation value) {
+                    return DropdownMenuItem<BoxLocation>(
+                      value: value,
+                      child: Text(value.toString().split('.').last),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _updateBoxSizeInFirebase(BoxSize? newSize) {
     if (box?.id != null && newSize != null) {
@@ -405,7 +413,7 @@ Widget _buildLocationPicker() {
                   isExpanded: true,
                   onChanged: selectedStatus != null
                       ? (BoxStatus? newValue) {
-                        BoxStatus? oldStatus = selectedStatus;
+                          BoxStatus? oldStatus = selectedStatus;
                           setState(() {
                             selectedStatus = newValue;
                           });
@@ -414,10 +422,29 @@ Widget _buildLocationPicker() {
                       : null,
                   items: BoxStatus.values
                       .map<DropdownMenuItem<BoxStatus>>((BoxStatus value) {
+                    // Using the _getIconForStatus method to get the corresponding icon
+                    Icon statusIcon = BoxStatusUtil.getIconForStatus(value);
+                    String statusText = _trimEnumName(value.toString());
                     return DropdownMenuItem<BoxStatus>(
                       value: value,
-                      child:
-                          Center(child: Text(value.toString().split('.').last)),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            statusIcon, // Status icon
+                            const SizedBox(width: 8),
+                            Text(
+                              statusText,
+                              style: TextStyle(
+                                fontSize: 18, // Increased font size
+                                fontWeight: FontWeight.bold, // Bold text
+                                color: Theme.of(context)
+                                    .primaryColor, // Accent color
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   }).toList(),
                   icon: Container(), // To remove the default dropdown icon
@@ -434,6 +461,10 @@ Widget _buildLocationPicker() {
     );
   }
 
+  String _trimEnumName(String enumString) {
+    return enumString.split('.').last;
+  }
+
   void _changeStatus(int direction) {
     BoxStatus? oldStatus = selectedStatus;
     int currentIndex = BoxStatus.values.indexOf(selectedStatus!);
@@ -445,7 +476,8 @@ Widget _buildLocationPicker() {
     _updateStatusInFirebase(BoxStatus.values[newIndex], oldStatus);
   }
 
-  void _updateStatusInFirebase(BoxStatus newStatus, BoxStatus? oldStatus) async {
+  void _updateStatusInFirebase(
+      BoxStatus newStatus, BoxStatus? oldStatus) async {
     if (box?.id != null) {
       await _updateBoxCountsInRequestDocument(newStatus, oldStatus);
       String typeAsString = newStatus.toString().split('.').last;
@@ -460,7 +492,7 @@ Widget _buildLocationPicker() {
             backgroundColor: Colors.red,
           ),
         );
-      });      
+      });
     } else {
       // Handle case where box ID is null
       ScaffoldMessenger.of(context).showSnackBar(
@@ -472,34 +504,35 @@ Widget _buildLocationPicker() {
     }
   }
 
-Future<void> _updateBoxCountsInRequestDocument(BoxStatus newStatus, BoxStatus? oldStatus) async {
-  if (box?.requestId != null && oldStatus != null) {
-    DocumentReference requestDocRef = FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
+  Future<void> _updateBoxCountsInRequestDocument(
+      BoxStatus newStatus, BoxStatus? oldStatus) async {
+    if (box?.requestId != null && oldStatus != null) {
+      DocumentReference requestDocRef =
+          FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
 
-    // Fetch the current box counts from the request document
-    var requestSnapshot = await requestDocRef.get();
-    var requestData = requestSnapshot.data() as Map<String, dynamic>; // Explicit cast
-    Map<String, int> boxCounts = requestData.containsKey('boxStatusCounts')
-                                  ? Map<String, int>.from(requestData['boxStatusCounts'])
-                                  : {};
+      // Fetch the current box counts from the request document
+      var requestSnapshot = await requestDocRef.get();
+      var requestData =
+          requestSnapshot.data() as Map<String, dynamic>; // Explicit cast
+      Map<String, int> boxCounts = requestData.containsKey('boxStatusCounts')
+          ? Map<String, int>.from(requestData['boxStatusCounts'])
+          : {};
 
-    // Update the count for the old and new status
-    String newStatusKey = newStatus.toString().split('.').last;
-    String oldStatusKey = oldStatus.toString().split('.').last;
+      // Update the count for the old and new status
+      String newStatusKey = newStatus.toString().split('.').last;
+      String oldStatusKey = oldStatus.toString().split('.').last;
 
-    boxCounts[newStatusKey] = (boxCounts[newStatusKey] ?? 0) + 1;
-    boxCounts[oldStatusKey] = (boxCounts[oldStatusKey] ?? 1) - 1;
+      boxCounts[newStatusKey] = (boxCounts[newStatusKey] ?? 0) + 1;
+      boxCounts[oldStatusKey] = (boxCounts[oldStatusKey] ?? 1) - 1;
 
-    // Ensure counts do not go below zero
-    boxCounts[oldStatusKey] = boxCounts[oldStatusKey]!.isNegative ? 0 : boxCounts[oldStatusKey]!;
+      // Ensure counts do not go below zero
+      boxCounts[oldStatusKey] =
+          boxCounts[oldStatusKey]!.isNegative ? 0 : boxCounts[oldStatusKey]!;
 
-    // Write back the updated counts to the request document
-    await requestDocRef.update({'boxStatusCounts': boxCounts});
+      // Write back the updated counts to the request document
+      await requestDocRef.update({'boxStatusCounts': boxCounts});
+    }
   }
-}
-
-
-
 
   void _updateBoxLocationInFirebase(BoxLocation newLocation) {
     if (box?.id != null) {
@@ -566,38 +599,131 @@ Future<void> _updateBoxCountsInRequestDocument(BoxStatus newStatus, BoxStatus? o
   }
 
   void _saveComment() {
-  final String commentText = _commentController.text;
+    final String commentText = _commentController.text;
 
-  if (box != null) {
-    FirebaseFirestore.instance.collection('boxes').doc(box!.id).update({
-      'comment': commentText,
-    }).then((_) {
-      setState(() {
-        comment = commentText; // Update the comment state
-        isEditMode = false;
+    if (box != null) {
+      FirebaseFirestore.instance.collection('boxes').doc(box!.id).update({
+        'comment': commentText,
+      }).then((_) {
+        setState(() {
+          comment = commentText; // Update the comment state
+          isEditMode = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Comment updated successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating comment: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
       });
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Comment updated successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error updating comment: $error'),
+          content: Text('Error: Box ID is not available'),
           backgroundColor: Colors.red,
         ),
       );
-    });
-  } else {
+    }
+  }
+
+//delete section
+
+  Widget _buildDeleteButton() {
+    return IconButton(
+      icon: const Icon(Icons.delete),
+      color: Colors.white,
+      onPressed: _showDeleteConfirmationDialog,
+    );
+  }
+
+Future<void> _deleteBox() async {
+  if (box?.id == null || box?.requestId == null) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Error: Box ID is not available'),
+        content: Text('Error: Box ID or Request ID is not available'),
         backgroundColor: Colors.red,
       ),
     );
+    return;
   }
+
+  final DocumentReference requestDocRef = FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
+
+  FirebaseFirestore.instance.runTransaction((transaction) async {
+    // Fetch the current request document
+    final DocumentSnapshot requestSnapshot = await transaction.get(requestDocRef);
+
+    if (!requestSnapshot.exists) {
+      throw Exception('Request does not exist!');
+    }
+
+    // Get the current box status counts
+    final Map<String, dynamic> requestData = requestSnapshot.data() as Map<String, dynamic>;
+    final Map<String, dynamic> boxStatusCounts = requestData['boxStatusCounts'] as Map<String, dynamic>? ?? {};
+
+    // Decrease the count for the box's status
+    final String statusKey = _trimEnumName(box!.status.toString());
+    final int currentCount = boxStatusCounts[statusKey] ?? 0;
+    boxStatusCounts[statusKey] = currentCount > 0 ? currentCount - 1 : 0;
+
+    // Update the request document with the new box status counts
+    transaction.update(requestDocRef, {'boxStatusCounts': boxStatusCounts});
+
+    // Delete the box document
+    transaction.delete(FirebaseFirestore.instance.collection('boxes').doc(box!.id));
+  }).then((_) {
+    // Navigate back after successful deletion and update
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Box deleted successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }).catchError((error) {
+    // Handle any errors here
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error deleting box: $error'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  });
 }
 
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Box'),
+          content: const Text(
+              'Are you sure you want to delete this box? This action cannot be undone.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the dialog
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the dialog
+                _deleteBox(); // Call the delete method
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

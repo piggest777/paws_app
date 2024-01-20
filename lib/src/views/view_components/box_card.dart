@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Import this package for date formatting
 import 'package:paws_app/src/models/box.dart';
+import 'package:paws_app/src/utils/box_status_util.dart';
 import 'package:paws_app/src/views/box_detail_page.dart';
 
 class BoxCard extends StatelessWidget {
@@ -23,7 +24,7 @@ class BoxCard extends StatelessWidget {
   ),
   title: Row(
     children: <Widget>[
-      _getIconForStatus(box.status),
+      BoxStatusUtil.getIconForStatus(box.status),
       SizedBox(width: 10),
       Text(
         box.requesterName ?? 'Unknown', // Fallback to 'Unknown' if null

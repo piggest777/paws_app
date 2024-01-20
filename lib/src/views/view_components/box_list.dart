@@ -15,6 +15,7 @@ class BoxListWidget extends StatelessWidget {
     return FirebaseFirestore.instance
         .collection('boxes')
         .where('requestId', isEqualTo: requestId)
+        // .orderBy('boxID')
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => Box.fromMap(doc.data(), doc.id))

@@ -135,9 +135,9 @@ Future<void> _incrementCreatedBoxCountInRequest(String requestId) async {
     }
 
     // Update the box count for the 'created' status
-    int currentCount = snapshot.data()?['boxCounts']['created'] ?? 0;
+    int currentCount = snapshot.data()?['boxStatusCounts']['created'] ?? 0;
     transaction.update(requestRef, {
-      'boxCounts.created': currentCount + 1
+      'boxStatusCounts.created': currentCount + 1
     });
   });
 }
