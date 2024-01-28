@@ -132,7 +132,7 @@ Future<void> createAndSharePdf() async {
     } else {
       // Running on mobile (Android or iOS)
       final output = await getTemporaryDirectory();
-      final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? request!.surname + '_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
+      final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? '${request!.surname}_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
       await file.writeAsBytes(pdfData);
       Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
     }

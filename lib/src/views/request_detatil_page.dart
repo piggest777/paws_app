@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:paws_app/main.dart';
 import 'package:paws_app/src/models/request.dart';
 import 'package:paws_app/src/views/create_box_page.dart';
 import 'package:paws_app/src/views/request_view.dart';
@@ -19,7 +20,7 @@ class _RequestDetailsPageState extends State<RequestDetailsPage> {
   void _handleBackNavigation(BuildContext context) {
       Navigator.of(context).pushReplacement(
     PageRouteBuilder(
-      pageBuilder: (context, animation1, animation2) => const RequestsPage(),
+      pageBuilder: (context, animation1, animation2) => const HomePage(initialTabIndex: 0,),
    transitionsBuilder: (context, animation, secondaryAnimation, child) {
     var begin = const Offset(-1.0, 0.0); // Starts from right
     var end = Offset.zero;

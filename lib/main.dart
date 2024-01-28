@@ -2,9 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/rendering.dart';
 import 'package:paws_app/src/services/group_state.dart';
 import 'package:paws_app/src/views/login_view.dart';
 import 'package:paws_app/src/views/request_view.dart';
+import 'package:paws_app/src/views/send_manager_page.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 
@@ -25,6 +27,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   }
+  debugPaintSizeEnabled = false; 
     runApp(
     ChangeNotifierProvider(
       create: (context) => GroupExpandedState(),
@@ -85,7 +88,8 @@ class PawsApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const HomePage(),
-        '/requestsPage': (context) => const RequestsPage(), // Home route
+          '/requests': (context) => const HomePage(initialTabIndex: 0),
+  '/sentItems': (context) => const HomePage(initialTabIndex: 1),
       },
       // home: const HomePage(),
     );
@@ -93,7 +97,8 @@ class PawsApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int initialTabIndex;
+  const HomePage({super.key, this.initialTabIndex = 0});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -101,6 +106,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialTabIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +124,7 @@ class _HomePageState extends State<HomePage> {
           if (user == null) {
             return const LoginPage();
           } else {
-            return const RequestsPage();
+            return _buildTabView();
           }
         } else {
           return const Scaffold(
@@ -124,4 +136,46 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+  Widget _buildTabView() {
+    return WillPopScope(
+      onWillPop: () async {
+        if (_currentIndex != widget.initialTabIndex) {
+          setState(() {
+            _currentIndex = widget.initialTabIndex;
+          });
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          children: const [
+            RequestsPage(),
+            SentItemsManagerPage(),
+          ],
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.list),
+              label: 'Requests',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.send),
+              label: 'Sent Items',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

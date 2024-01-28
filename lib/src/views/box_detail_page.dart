@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paws_app/src/services/pdf_manager.dart';
 import 'package:paws_app/src/utils/box_status_util.dart';
 import 'package:paws_app/src/views/request_detatil_page.dart';
+import 'package:paws_app/src/views/view_components/box_weight.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 
@@ -149,65 +150,95 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
           _buildDeleteButton(), // Place the delete button in the AppBar
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            if (box != null || boxId != null)
-              Screenshot(
-                  controller: _screenshotController,
-                  child: _buildQRCode(box?.id ?? boxId!)),
-            const SizedBox(height: 10),
-            if (requestName != null)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        '${request?.name ?? ''} ${request?.surname ?? ''}',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+      body: Center(
+        child: Container(
+          constraints: BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                if (box != null || boxId != null)
+                  Screenshot(
+                      controller: _screenshotController,
+                      child: _buildQRCode(box?.id ?? boxId!)),
+                const SizedBox(height: 10),
+                if (requestName != null)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            '${request?.name ?? ''} ${request?.surname ?? ''}',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Box #${box?.boxID}',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      Text(
-                        'Box #${box?.boxID}',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            const SizedBox(height: 5),
-            _buildBoxDetailsCard(),
-            const SizedBox(height: 5),
-            _buildStatusCard(),
-            const SizedBox(height: 5),
-            _buildCommentSection(),
-            const SizedBox(height: 5),
-            if (box != null &&
-                request != null &&
-                person != null) // Check if both objects are created
-              Center(
-                child: Column(
-                  children: [
-                    ElevatedButton(
-                      onPressed: _createAndSharePdf,
-                      child: const Text('Create and Share PDF'),
                     ),
-                    if (boxId != null)
-                      ElevatedButton(
-                        onPressed: () => _navigateToRequestDetails(context),
-                        child: const Text('View Request Details'),
-                      ),
-                  ],
-                ),
+                  ),
+                const SizedBox(height: 5),
+                _buildBoxDetailsCard(),
+                const SizedBox(height: 5),
+                WeightInputWidget(
+                initialWeight: box?.weight ?? 0.0,
+                onWeightChanged: (newWeight) {
+                  setState(() {
+                    box?.weight = newWeight;
+                  });
+                  // Optionally, update the weight in your database
+                  _updateBoxWeightInFirebase(newWeight);
+                },
               ),
-          ],
+                const SizedBox(height: 5),
+                _buildStatusCard(),
+                const SizedBox(height: 5),
+                _buildCommentSection(),
+                const SizedBox(height: 5),
+                if (box != null &&
+                    request != null &&
+                    person != null) // Check if both objects are created
+                  Center(
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: _createAndSharePdf,
+                          child: const Text('Create and Share PDF'),
+                        ),
+                        if (boxId != null)
+                          ElevatedButton(
+                            onPressed: () => _navigateToRequestDetails(context),
+                            child: const Text('View Request Details'),
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
+
+  void _updateBoxWeightInFirebase(double newWeight) {
+  if (box?.id != null) {
+    FirebaseFirestore.instance
+        .collection('boxes')
+        .doc(box!.id)
+        .update({'weight': newWeight})
+        .then((_) => _showSnackbar('Weight updated successfully', Colors.green))
+        .catchError((error) => _showSnackbar('Error updating weight: $error', Colors.red));
+  } else {
+    _showSnackbar('Error: Box ID is not available', Colors.red);
+  }
+}
+
 
   void _createAndSharePdf() async {
     if (widget.box?.id != null || boxId != null) {
@@ -232,7 +263,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
 
   Widget _buildBoxDetailsCard() {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0.0),
       child: Column(
         children: [
           IntrinsicHeight(
@@ -240,7 +271,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 _buildSizePicker(),
-                VerticalDivider(width: 1, thickness: 1),
+                const VerticalDivider(width: 1, thickness: 1),
                 _buildTypePicker(),
               ],
             ),
@@ -254,11 +285,11 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   Widget _buildSizePicker() {
     return Expanded(
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 5.0),
+        padding: const EdgeInsets.symmetric(vertical: 5.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Size', style: TextStyle(fontWeight: FontWeight.bold)),
             DropdownButton<BoxSize>(
               value: selectedSize,
               onChanged: (BoxSize? newValue) {
@@ -284,11 +315,11 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   Widget _buildTypePicker() {
     return Expanded(
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 5.0),
+        padding: const EdgeInsets.symmetric(vertical: 5.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('Type', style: TextStyle(fontWeight: FontWeight.bold)),
             DropdownButton<BoxType>(
               value: selectedType,
               onChanged: (BoxType? newValue) {
@@ -317,17 +348,17 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
           selectedStatus != BoxStatus.recived &&
           selectedStatus != BoxStatus.rapported,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center, // Center the Row content
           children: <Widget>[
-            Text(
+            const Text(
               'Location: ',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            SizedBox(width: 8), // Spacer between text and dropdown
+            const SizedBox(width: 8), // Spacer between text and dropdown
             // Limit the width of the dropdown list
-            Container(
+            SizedBox(
               width: 100, // Adjust the width as needed
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<BoxLocation>(
@@ -476,33 +507,74 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     _updateStatusInFirebase(BoxStatus.values[newIndex], oldStatus);
   }
 
-  void _updateStatusInFirebase(
-      BoxStatus newStatus, BoxStatus? oldStatus) async {
-    if (box?.id != null) {
-      await _updateBoxCountsInRequestDocument(newStatus, oldStatus);
-      String typeAsString = newStatus.toString().split('.').last;
-      FirebaseFirestore.instance
-          .collection('boxes')
-          .doc(box!.id)
-          .update({'status': typeAsString}).catchError((error) {
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating status: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      });
-    } else {
-      // Handle case where box ID is null
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: Box ID is not available'),
-          backgroundColor: Colors.red,
-        ),
-      );
+void _updateStatusInFirebase(BoxStatus newStatus, BoxStatus? oldStatus) async {
+  if (box?.id != null) {
+    DateTime now = DateTime.now();
+    Map<String, dynamic> updates = {'status': newStatus.toString().split('.').last};
+
+    // Check for packing date update
+    if (newStatus == BoxStatus.packed && box?.packingDate == null) {
+      updates['packingDate'] = now;
+      box!.packingDate = now;  // Update local box object
+    } else if (newStatus == BoxStatus.packed && box?.packingDate != null) {
+      bool overwrite = await _showOverrideDateDialog('Packing Date');
+      if (overwrite) {
+        updates['packingDate'] = now;
+        box!.packingDate = now;  // Update local box object
+      }
     }
+
+    // Check for sending date update
+    if (newStatus == BoxStatus.sended && box?.sendingDate == null) {
+      updates['sendingDate'] = now;
+      box!.sendingDate = now;  // Update local box object
+    } else if (newStatus == BoxStatus.sended && box?.sendingDate != null) {
+      bool overwrite = await _showOverrideDateDialog('Sending Date');
+      if (overwrite) {
+        updates['sendingDate'] = now;
+        box!.sendingDate = now;  // Update local box object
+      }
+    }
+
+    FirebaseFirestore.instance.collection('boxes').doc(box!.id)
+      .update(updates)
+      .then((_) => _showSnackbar('Status updated successfully', Colors.green))
+      .catchError((error) => _showSnackbar('Error updating status: $error', Colors.red));
+
+    await _updateBoxCountsInRequestDocument(newStatus, oldStatus);
+  } else {
+    _showSnackbar('Error: Box ID is not available', Colors.red);
   }
+}
+
+Future<bool> _showOverrideDateDialog(String dateType) async {
+  bool overwrite = false;
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Override $dateType?'),
+        content: Text('This box already has a $dateType. Do you want to override it with the current date?'),
+        actions: <Widget>[
+          TextButton(
+            child: Text('No'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: Text('Yes'),
+            onPressed: () {
+              overwrite = true;
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+  return overwrite;
+}
 
   Future<void> _updateBoxCountsInRequestDocument(
       BoxStatus newStatus, BoxStatus? oldStatus) async {

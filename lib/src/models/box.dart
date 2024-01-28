@@ -10,12 +10,16 @@ class Box {
   int boxID; // Simplified box ID
   String requestId; // Request document ID this box is connected to
   DateTime? creationDate; // Field for creation date
+  DateTime? packingDate; // Field for packing date
+  DateTime? sendingDate; // Field for sending date
   String requesterName; // Field for requester's name
   BoxSize size;
   BoxType type;
   BoxStatus status;
   BoxLocation location; 
   String comment;
+  double weight; // Field for weight
+
 
   Box({
     required this.id,
@@ -28,6 +32,9 @@ class Box {
     required this.comment,
     this.creationDate,
     required this.requesterName,
+    this.weight = 0.0, // Default value for weight
+    this.packingDate,
+    this.sendingDate,
     });
 
   // Method to convert box object to a map, useful for Firebase
@@ -43,6 +50,7 @@ Map<String, dynamic> toMap() {
     'comment': comment,
     'creationDate': creationDate ?? FieldValue.serverTimestamp(), // Use server timestamp if no date is provided
     'requesterName': requesterName,
+    'weight': weight,
   };
 }
 
@@ -71,6 +79,9 @@ Map<String, dynamic> toMap() {
     comment: map['comment'] ?? '',
     creationDate: map['creationDate'] is Timestamp ? (map['creationDate'] as Timestamp).toDate() : null,
     requesterName: map['requesterName'] ?? '',
+    weight: map['weight']?.toDouble() ?? 0.0, // Ensure you get a double
+    packingDate: map['packingDate'] is Timestamp ? (map['packingDate'] as Timestamp).toDate() : null,
+    sendingDate: map['sendingDate'] is Timestamp ? (map['sendingDate'] as Timestamp).toDate() : null,
   );
   }
 }

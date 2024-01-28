@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:paws_app/main.dart';
 import 'package:paws_app/src/views/request_view.dart';
 
 import '../../services/auth_service.dart';
@@ -17,13 +18,15 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
   final AuthService _authService = AuthService();
 
   Future<bool> checkIfUserIsWhitelisted(String? email) async {
-  if (email == null) return false;
+    if (email == null) return false;
 
-  final collection = FirebaseFirestore.instance.collection('users');
-  final querySnapshot = await collection.where('email', isEqualTo: email).get();
+    final collection = FirebaseFirestore.instance.collection('users');
+    final querySnapshot =
+        await collection.where('email', isEqualTo: email).get();
 
-  return querySnapshot.docs.isNotEmpty; // True if user is found in the whitelist
-}
+    return querySnapshot
+        .docs.isNotEmpty; // True if user is found in the whitelist
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,10 +57,11 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                     bool isWhitelisted =
                         await checkIfUserIsWhitelisted(user.email);
                     if (isWhitelisted) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                            builder: (context) => const RequestsPage()),
-                      );
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => const HomePage(
+                              initialTabIndex:
+                                  0) // Assuming the Requests tab is at index 0
+                          ));
                     } else {
                       // User is not in the whitelist
                       await _authService
@@ -65,12 +69,12 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: Text('Access Denied'),
-                          content: Text(
+                          title: const Text('Access Denied'),
+                          content: const Text(
                               'Your account does not have access to this app.'),
                           actions: <Widget>[
                             TextButton(
-                              child: Text('OK'),
+                              child: const Text('OK'),
                               onPressed: () => Navigator.of(context).pop(),
                             ),
                           ],

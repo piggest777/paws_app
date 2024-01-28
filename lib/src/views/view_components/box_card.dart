@@ -7,7 +7,7 @@ import 'package:paws_app/src/views/box_detail_page.dart';
 class BoxCard extends StatelessWidget {
   final Box box;
 
-  const BoxCard({Key? key, required this.box}) : super(key: key);
+  const BoxCard({super.key, required this.box});
 
   @override
   Widget build(BuildContext context) {
@@ -25,18 +25,18 @@ class BoxCard extends StatelessWidget {
   title: Row(
     children: <Widget>[
       BoxStatusUtil.getIconForStatus(box.status),
-      SizedBox(width: 10),
+      const SizedBox(width: 10),
       Text(
         box.requesterName ?? 'Unknown', // Fallback to 'Unknown' if null
-        style: TextStyle(fontSize: 14),
+        style: const TextStyle(fontSize: 14),
       ),
     ],
   ),
   subtitle: Text(
     'Created: ${DateFormat('yyyy-MM-dd').format(box.creationDate ?? DateTime.now())}', // Fallback to current date if null
-    style: TextStyle(fontSize: 12),
+    style: const TextStyle(fontSize: 12),
   ),
-  trailing: Icon(Icons.chevron_right),
+  trailing: const Icon(Icons.chevron_right),
   onTap: () {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => BoxDetailsPage(boxId: box.id,),

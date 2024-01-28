@@ -4,6 +4,8 @@ import 'package:paws_app/src/models/box.dart';
 import 'package:paws_app/src/views/view_components/box_card.dart';
 
 class BoxListView extends StatefulWidget {
+  const BoxListView({super.key});
+
   @override
   _BoxListViewState createState() => _BoxListViewState();
 }
@@ -16,11 +18,11 @@ class _BoxListViewState extends State<BoxListView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Boxes'),
+        title: const Text('Boxes'),
         actions: [
           if (currentFilterStatus != null)
             IconButton(
-              icon: Icon(Icons.clear),
+              icon: const Icon(Icons.clear),
               onPressed: () {
                 setState(() {
                   currentFilterStatus = null;
@@ -29,8 +31,8 @@ class _BoxListViewState extends State<BoxListView> {
             ),
           IconButton(
             icon: currentFilterStatus != null
-                ? Icon(Icons.filter_alt)
-                : Icon(Icons.filter_list),
+                ? const Icon(Icons.filter_alt)
+                : const Icon(Icons.filter_list),
             onPressed: () {
               _showFilterOptions(context);
             },
@@ -62,9 +64,9 @@ BoxCountLabel(
                     },
                   );
                 } else if (snapshot.hasError) {
-                  return Center(child: Text('Error fetching boxes'));
+                  return const Center(child: Text('Error fetching boxes'));
                 } else {
-                  return Center(child: Text('No boxes found'));
+                  return const Center(child: Text('No boxes found'));
                 }
               },
             ),
@@ -90,7 +92,7 @@ BoxCountLabel(
                   });
                 },
               );
-            }).toList(),
+            }),
           ],
         );
       },
@@ -118,10 +120,10 @@ class BoxCountLabel extends StatefulWidget {
   final Stream<QuerySnapshot> stream;
 
   const BoxCountLabel({
-    Key? key,
+    super.key,
     this.filterStatus,
     required this.stream,
-  }) : super(key: key);
+  });
 
   @override
   _BoxCountLabelState createState() => _BoxCountLabelState();
@@ -134,7 +136,7 @@ class _BoxCountLabelState extends State<BoxCountLabel> {
   void initState() {
     super.initState();
     widget.stream.listen((snapshot) {
-      WidgetsBinding.instance!.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
             itemCount = snapshot.docs.length;
@@ -147,12 +149,12 @@ class _BoxCountLabelState extends State<BoxCountLabel> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       child: Text(
         widget.filterStatus != null
             ? 'Showing $itemCount boxes with status: ${_formatStatus(widget.filterStatus!)}'
             : 'Total boxes: $itemCount',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
       ),
     );
   }
