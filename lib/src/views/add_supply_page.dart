@@ -1,0 +1,282 @@
+import 'package:flutter/material.dart';
+import 'package:paws_app/src/models/pet_care_supply_type.dart';
+import 'package:paws_app/src/services/firebase_service.dart';
+import 'package:paws_app/src/views/barcode_scanner_page.dart';
+
+class AddSupplyPage extends StatefulWidget {
+
+final String? initialBarcode;
+
+  AddSupplyPage({this.initialBarcode}); 
+
+  @override
+  _AddSupplyPageState createState() => _AddSupplyPageState();
+}
+
+class _AddSupplyPageState extends State<AddSupplyPage> {
+
+  String? scannedBarcode;
+  final FirebaseService _firebaseService = FirebaseService();
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController barcodeController = TextEditingController();
+  TextEditingController manufacturerController = TextEditingController();
+  TextEditingController weightController = TextEditingController();
+
+
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial barcode value if provided
+    if (widget.initialBarcode != null) {
+      barcodeController.text = widget.initialBarcode!;
+    }
+  }
+
+  // Function to generate keywords from name, barcode, and manufacturer
+  List<String> generateKeywords(String name, String? barcode) {
+    final keywords = <String>{};
+
+    // Add name keywords
+    final nameWords = name.split(' ');
+    for (var word in nameWords) {
+      for (var i = 1; i <= word.length; i++) {
+        keywords.add(word.substring(0, i).toLowerCase());
+      }
+    }
+
+    // Add barcode keywords (if available)
+    if (barcode != null) {
+      keywords.add(barcode.toLowerCase());
+    }
+
+    return keywords.toList();
+  }
+
+  // Function to validate the input fields and return an error message if needed
+  bool validateForm() {
+  final name = nameController.text;
+  final barcode = barcodeController.text;
+  final weight = weightController.text;
+
+  // Validate name
+  if (name.isEmpty) {
+    // Show an error message for name
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please enter a name'),
+      ),
+    );
+    return false;
+  }
+
+  // Validate barcode (if provided)
+  if (barcode.isNotEmpty) {
+    try {
+      int.parse(barcode); // Check if barcode can be parsed as an integer
+    } catch (e) {
+      // Show an error message for invalid barcode format
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Invalid barcode format. Please enter a valid integer'),
+        ),
+      );
+      return false;
+    }
+  }
+
+  // Validate weight
+  if (weight.isEmpty) {
+    // Show an error message for weight
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Please enter a weight'),
+      ),
+    );
+    return false;
+  }
+
+final weightValue = parseDouble(weight);
+
+if (weightValue == null || weightValue <= 0) {
+  // Show an error message for invalid or non-positive weight
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Invalid weight format. Please enter a valid positive number'),
+    ),
+  );
+  return false;
+}
+
+  return true;
+}
+
+
+  void scanBarcode() async {
+    final scannedData = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => BarcodeScannerPage(
+          onBarcodeScanned: (data) {
+            Navigator.of(context)
+                .pop(data); // Pass the scanned data back to the calling page
+          },
+        ),
+      ),
+    );
+
+    // Handle the scannedData returned from the Barcode Scanner page here
+    if (scannedData != null) {
+      print(scannedData);
+      barcodeController.text = scannedData;
+    } else {
+      // Handle the case where no data was scanned
+    }
+  }
+
+  double? parseDouble(String text) {
+  final cleanedValue = text.replaceAll(',', '.'); // Replace commas with periods
+  try {
+    return double.parse(cleanedValue);
+  } catch (e) {
+    return null; // Return null if parsing fails
+  }
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Add Supply Item'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.check),
+            onPressed: () async {
+              final name = nameController.text;
+              final barcode = barcodeController.text.isNotEmpty
+                  ? barcodeController.text
+                  : null;
+              final manufacturer = manufacturerController.text.isNotEmpty
+                  ? manufacturerController.text
+                  : null;
+              final weightText = weightController.text;
+
+              // Validate the inputs
+              final isValid = validateForm();
+              if (isValid) {
+    
+              // Generate keywords
+              final keywords = generateKeywords(name, barcode);
+
+              // Create a new supply item
+              final newSupplyItem = PetCareSupply(
+                id: '',
+                name: name,
+                barcode: barcode,
+                manufacturer: manufacturer,
+                weight: parseDouble(weightText) ?? 0.0,
+                keywords: keywords,
+              );
+
+              try {
+                // Save the new supply item to Firebase
+                await _firebaseService
+                    .addSupplyItemTypeToFirebase(newSupplyItem);
+
+                // Navigate back to the previous screen
+                Navigator.of(context).pop();
+              } catch (error) {
+                // Handle the error, e.g., display an error message to the user
+                print('Error: $error');
+              }
+              }
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+              controller: nameController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a name';
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Barcode (optional)',
+                border: OutlineInputBorder(),
+              ),
+              controller: barcodeController,
+              keyboardType: TextInputType.numberWithOptions(
+                  decimal: false), 
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  // Check if the barcode can be parsed as a double
+                  try {
+                    double.parse(value);
+                  } catch (e) {
+                    return 'Invalid barcode format. Please enter a valid number';
+                  }
+                }
+                return null;
+              },
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Manufacturer (optional)',
+                border: OutlineInputBorder(),
+              ),
+              controller: manufacturerController,
+            ),
+            SizedBox(height: 16),
+            TextFormField(
+              decoration: InputDecoration(
+                labelText: 'Weight (kg)',
+                border: OutlineInputBorder(),
+              ),
+              controller: weightController,
+              keyboardType: TextInputType.numberWithOptions(
+                  decimal: true), // Decimal keypad
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  // Check if the weight can be parsed as a double and is positive
+                  try {
+                    final weight = double.parse(value);
+                    if (weight <= 0.0) {
+                      return 'Weight must be a positive number';
+                    }
+                  } catch (e) {
+                    return 'Invalid weight format. Please enter a valid number';
+                  }
+                } else {
+                  // Weight is empty, return an error message
+                  return 'Please enter a weight';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          scanBarcode();
+        },
+        child: Icon(Icons.barcode_reader),
+        tooltip: 'Save',
+      ),
+    );
+  }
+}

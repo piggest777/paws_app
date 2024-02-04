@@ -7,6 +7,7 @@ import 'package:paws_app/src/services/group_state.dart';
 import 'package:paws_app/src/views/login_view.dart';
 import 'package:paws_app/src/views/request_view.dart';
 import 'package:paws_app/src/views/send_manager_page.dart';
+import 'package:paws_app/src/views/storage_page.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 
@@ -154,6 +155,7 @@ class _HomePageState extends State<HomePage> {
           children: const [
             RequestsPage(),
             SentItemsManagerPage(),
+            StoragePage(),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -172,6 +174,10 @@ class _HomePageState extends State<HomePage> {
               icon: Icon(Icons.send),
               label: 'Sent Items',
             ),
+            BottomNavigationBarItem(
+            icon: Icon(Icons.storage),
+            label: 'Storage',
+          ),
           ],
         ),
       ),
