@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
@@ -17,6 +19,7 @@ class _StoragePageState extends State<StoragePage> {
   List<PetCareSupply> supplies = [];
   List<PetCareSupply> displayedSupplies = [];
   TextEditingController searchController = TextEditingController();
+  StreamSubscription<QuerySnapshot>? suppliesSubscription;
 
   @override
   void initState() {
@@ -25,18 +28,21 @@ class _StoragePageState extends State<StoragePage> {
   }
 
   void fetchSupplies() {
-    FirebaseFirestore.instance
+    suppliesSubscription = FirebaseFirestore.instance
         .collection('petSupplyType')
         .where('count', isGreaterThan: 0)
         .snapshots()
         .listen((QuerySnapshot querySnapshot) {
-      setState(() {
-        supplies = querySnapshot.docs
-            .map((doc) => PetCareSupply.fromMap(
-                doc.data() as Map<String, dynamic>, doc.id))
-            .toList();
-        displayedSupplies = List.from(supplies);
-      });
+      if (mounted) {
+        // Check if the widget is still in the tree
+        setState(() {
+          supplies = querySnapshot.docs
+              .map((doc) => PetCareSupply.fromMap(
+                  doc.data() as Map<String, dynamic>, doc.id))
+              .toList();
+          displayedSupplies = List.from(supplies);
+        });
+      }
     });
   }
 
@@ -61,7 +67,7 @@ class _StoragePageState extends State<StoragePage> {
     });
   }
 
-    void clearSearch() {
+  void clearSearch() {
     setState(() {
       searchController.clear(); // Clear the search text
       displayedSupplies = List.from(supplies); // Reset to full list
@@ -74,6 +80,13 @@ class _StoragePageState extends State<StoragePage> {
         builder: (context) => SupplyItemDetailsPage(supplyItem: supply),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    suppliesSubscription?.cancel(); // Cancel the subscription
+    searchController.dispose(); // Dispose the text controller
+    super.dispose();
   }
 
   @override
