@@ -1,8 +1,8 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
+import 'package:paws_app/src/views/edit_supply_page.dart';
 import 'package:paws_app/src/views/view_components/barcode_view.dart';
 import 'package:paws_app/src/views/view_components/counter_widget.dart';
 
@@ -16,7 +16,7 @@ class SupplyItemDetailsPage extends StatefulWidget {
 }
 
 class _SupplyItemDetailsPageState extends State<SupplyItemDetailsPage> {
-  late int counterValue;
+  late double counterValue;
   late Stream<DocumentSnapshot> supplyItemStream;
   late FirebaseFirestore firestore;
   late StreamSubscription<DocumentSnapshot> supplyItemSubscription;
@@ -30,17 +30,20 @@ class _SupplyItemDetailsPageState extends State<SupplyItemDetailsPage> {
         .doc(widget.supplyItem.id)
         .snapshots();
    supplyItemSubscription = supplyItemStream.listen((DocumentSnapshot snapshot) {
-    if (snapshot.exists) {
-      if (mounted) {
-        setState(() {
-          counterValue = snapshot['count'] ?? 0;
-        });
-      }
-    }
+if (snapshot.exists) {
+  var data = snapshot.data() as Map<String, dynamic>; // Explicit cast
+  var count = data['count'];
+  if (count != null) {
+    setState(() {
+      // Ensure counterValue is treated as a double
+      counterValue = count is int ? count.toDouble() : count as double;
+    });
+  }
+}
   });
   }
 
-void _onSave(int updatedCount) {
+void _onSave(double updatedCount) {
   final supplyItemId = widget.supplyItem.id;
   final supplyItemRef = firestore.collection('petSupplyType').doc(supplyItemId);
 
@@ -68,26 +71,58 @@ void dispose() {
     return Scaffold(
       appBar: AppBar(
         title: Text('Supply Item Details'),
+          actions: [
+    IconButton(
+      icon: Icon(Icons.edit),
+      onPressed: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => EditSupplyPage(supplyItem: widget.supplyItem),
+        ));
+      },
+    ),
+  ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.supplyItem.barcode != null)
-              BarcodeImageWidget(barcodeValue: widget.supplyItem.barcode!),
-            SizedBox(height: 16),
-            buildStyledNameText(context),
-            SizedBox(height: 16),
-            buildBasicInfoCard(context),
-            SizedBox(height: 16),
-            CounterCardWidget(
-            key: ValueKey(counterValue), // Add this line
-            initialValue: counterValue, 
-            onSave: _onSave,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (widget.supplyItem.barcode != null)
+                BarcodeImageWidget(barcodeValue: widget.supplyItem.barcode!),
+              SizedBox(height: 8),
+              buildStyledNameText(context),
+              SizedBox(height: 8),
+              buildBasicInfoCard(context),
+              SizedBox(height: 8),
+              
+      Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          buildTypeDetailCard("For Whom", widget.supplyItem.forWhom),
+          buildTypeDetailCard("Supply Type", widget.supplyItem.supplyType),
+          buildTypeDetailCard("Food Type", widget.supplyItem.foodType),
+          buildTypeDetailCard("Packaging", widget.supplyItem.packaging),
+        ],
           ),
-            
-          ],
+        ),
+      ),
+              SizedBox(height: 8),
+              CounterCardWidget(
+              key: ValueKey(counterValue), // Add this line
+              initialValue: counterValue, 
+              onSave: _onSave,
+            ),
+              
+            ],
+          ),
         ),
       ),
     );
@@ -111,7 +146,7 @@ Widget buildStyledNameText(BuildContext context) {
         color: Color.fromARGB(255, 1, 57, 103), // Use the same accent color
         thickness: 2, // Adjust the thickness as needed
       ),
-      SizedBox(height: 8), // Add some space above and below the divider
+       // Add some space above and below the divider
     ],
   );
 }
@@ -168,4 +203,29 @@ Widget buildBasicInfoCard(BuildContext context) {
     ),
   );
 }
+
+Widget buildTypeDetailCard(String title, String? value) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 8.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          value ?? 'N/A',
+          style: TextStyle(
+            fontSize: 16,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 }

@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/rendering.dart';
 import 'package:paws_app/src/services/group_state.dart';
+import 'package:paws_app/src/utils/dropdown_list_provider.dart';
+import 'package:paws_app/src/utils/dropdown_provider.dart';
+import 'package:paws_app/src/utils/form_state_provider.dart';
 import 'package:paws_app/src/views/login_view.dart';
 import 'package:paws_app/src/views/request_view.dart';
 import 'package:paws_app/src/views/send_manager_page.dart';
@@ -30,8 +33,13 @@ void main() async {
   }
   debugPaintSizeEnabled = false; 
     runApp(
-    ChangeNotifierProvider(
-      create: (context) => GroupExpandedState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => FormStateProvider()),
+        ChangeNotifierProvider(create: (_) => DropdownItemsProvider([])),
+        ChangeNotifierProvider(create: (context) => GroupExpandedState()),
+        ChangeNotifierProvider(create: (context) => DropdownProvider()),
+      ],
       child: const PawsApp(),
     ),
   );

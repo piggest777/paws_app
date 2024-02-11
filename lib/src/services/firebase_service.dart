@@ -12,5 +12,16 @@ class FirebaseService {
       throw error;
     }
   }
+
+    Future<void> updateSupplyItemTypeInFirebase(String id, Map<String, dynamic> data) async {
+    try {
+      await _firestore.collection('petSupplyType').doc(id).update(data);
+      print("Supply item updated successfully.");
+    } catch (e) {
+      print("Error updating supply item: $e");
+      throw e; 
+    }
+  }
+
 }
 

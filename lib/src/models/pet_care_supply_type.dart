@@ -5,7 +5,11 @@ class PetCareSupply {
   final double weight;
   final List<String> keywords;
   final String? manufacturer;
-  int count; // Added item counter
+  double count; // Support for partial quantities
+  final String? forWhom; // Targeted consumer (e.g., dogs, cats)
+  final String? supplyType; // Type of supply (e.g., food, medical)
+  final String? foodType; // Specific for food items (wet, dry)
+  final String? packaging; // Packaging form
 
   PetCareSupply({
     required this.id,
@@ -14,10 +18,13 @@ class PetCareSupply {
     required this.weight,
     required this.keywords,
     this.manufacturer,
-    this.count = 0, // Default count to 0
+    this.count = 0.0,
+    this.forWhom,
+    this.supplyType,
+    this.foodType,
+    this.packaging,
   });
 
-  // Create a PetCareSupply object from a map
   factory PetCareSupply.fromMap(Map<String, dynamic> map, String id) {
     return PetCareSupply(
       id: id,
@@ -26,11 +33,14 @@ class PetCareSupply {
       weight: (map['weight'] ?? 0.0).toDouble(),
       keywords: List<String>.from(map['keywords'] ?? []),
       manufacturer: map['manufacturer'],
-      count: map['count'] ?? 0, // Initialize count from the map
+      count: map['count'] != null ? (map['count'] is int ? (map['count'] as int).toDouble() : map['count'] as double) : 0.0,
+      forWhom: map['forWhom'],
+      supplyType: map['supplyType'], 
+      foodType: map['foodType'], // This can be null for non-food items
+      packaging: map['packaging'], 
     );
   }
 
-  // Convert a PetCareSupply object to a map
   Map<String, dynamic> toMap() {
     return {
       'name': name,
@@ -38,7 +48,11 @@ class PetCareSupply {
       'weight': weight,
       'keywords': keywords,
       'manufacturer': manufacturer,
-      'count': count, // Include count in the map
+      'count': count,
+      'forWhom': forWhom,
+      'supplyType': supplyType,
+      'foodType': foodType, 
+      'packaging': packaging,
     };
   }
 }
