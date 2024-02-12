@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:paws_app/main.dart';
 import 'package:paws_app/src/models/request.dart';
 import 'package:paws_app/src/views/create_box_page.dart';
-import 'package:paws_app/src/views/request_view.dart';
 import 'package:paws_app/src/views/view_components/box_list.dart';
 import 'package:paws_app/src/views/view_components/person_info_card.dart';
 

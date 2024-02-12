@@ -6,9 +6,8 @@ class CounterCardWidget extends StatefulWidget {
   final Function(double)
       onSave; // Callback to save the counter value, now expects a double
 
-  CounterCardWidget(
-      {Key? key, required this.initialValue, required this.onSave})
-      : super(key: key);
+  const CounterCardWidget(
+      {super.key, required this.initialValue, required this.onSave});
 
   @override
   _CounterCardWidgetState createState() => _CounterCardWidgetState();
@@ -93,17 +92,17 @@ void _onSavePressed() {
               TextField(
                 controller: customQuantityController,
                 autofocus: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Quantity to Add',
                   hintText: 'Enter a number',
                 ),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(
                       RegExp(r'^\d*[,\.]?\d{0,1}')),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   // Replace commas with dots and try parsing the string to double
@@ -122,7 +121,7 @@ void _onSavePressed() {
                   widget.onSave(editedValue); // Persist the new total value
                   Navigator.of(context).pop(); // Close the modal
                 },
-                child: Text('Add'),
+                child: const Text('Add'),
               ),
             ],
           ),
@@ -167,13 +166,13 @@ Widget build(BuildContext context) {
               ),
             ],
           ),
-          SizedBox(height: 20), // Providing more space before the custom quantity button
+          const SizedBox(height: 20), // Providing more space before the custom quantity button
           Row(
             mainAxisAlignment: MainAxisAlignment.center, // Center align the custom quantity button
             children: [
               ElevatedButton.icon(
-                icon: Icon(Icons.edit, size: 24), // Using an icon alongside text for clarity
-                label: Text('Custom Quantity', style: TextStyle(fontSize: 16)),
+                icon: const Icon(Icons.edit, size: 24), // Using an icon alongside text for clarity
+                label: const Text('Custom Quantity', style: TextStyle(fontSize: 16)),
                 onPressed: () => _showCustomFullScreenModal(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary, // Use a contrasting color for the custom quantity button
@@ -182,15 +181,15 @@ Widget build(BuildContext context) {
               ),
             ],
           ),
-          SizedBox(height: 10), // Space before the Save button for visual separation
+          const SizedBox(height: 10), // Space before the Save button for visual separation
         ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: isValueChanged ? Theme.of(context).colorScheme.primary : Theme.of(context).disabledColor,
-              minimumSize: Size(double.infinity, 50), // Make the save button wider and taller
+              minimumSize: const Size(double.infinity, 50), // Make the save button wider and taller
               foregroundColor: Theme.of(context).colorScheme.onPrimary,
             ),
             onPressed: isValueChanged ? _onSavePressed : null,
-            child: Text('Save', style: TextStyle(fontSize: 18)),
+            child: const Text('Save', style: TextStyle(fontSize: 18)),
           ),
         ],
       ),

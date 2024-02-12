@@ -7,6 +7,8 @@ import 'package:paws_app/src/views/supply_item_details.dart';
 import 'package:paws_app/src/views/view_components/pet_supply_list_item.dart'; // Import the PetCareSupply class
 
 class ScanBarcodePage extends StatefulWidget {
+  const ScanBarcodePage({super.key});
+
   @override
   State<ScanBarcodePage> createState() => _ScanBarcodePageState();
 }
@@ -33,14 +35,14 @@ class _ScanBarcodePageState extends State<ScanBarcodePage> {
       });
 
       // Add the filtered supplies to the list
-      querySnapshot.docs.forEach((DocumentSnapshot document) {
+      for (var document in querySnapshot.docs) {
         final data = document.data() as Map<String, dynamic>;
         final id = document.id;
         final supply = PetCareSupply.fromMap(data, id);
         setState(() {
           filteredSupplies.add(supply);
         });
-      });
+      }
 
       // Check if any results are empty and update the suggestion button visibility
       setState(() {
@@ -84,12 +86,12 @@ class _ScanBarcodePageState extends State<ScanBarcodePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Scan Barcode'),
+        title: const Text('Scan Barcode'),
         actions: <Widget>[
           // Add a barcode scan button here
           IconButton(
             onPressed: scanBarcode,
-            icon: Icon(Icons.qr_code_scanner),
+            icon: const Icon(Icons.qr_code_scanner),
           ),
         ],
       ),
@@ -105,9 +107,9 @@ class _ScanBarcodePageState extends State<ScanBarcodePage> {
               },
               decoration: InputDecoration(
                 hintText: 'Search by name or keyword',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: const Icon(Icons.clear),
                   onPressed: () {
                     // Clear the search field and results
                     setState(() {
@@ -118,7 +120,7 @@ class _ScanBarcodePageState extends State<ScanBarcodePage> {
                     });
                   },
                 ),
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
             ),
           ),

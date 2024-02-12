@@ -152,7 +152,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
       ),
       body: Center(
         child: Container(
-          constraints: BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(maxWidth: 600),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -557,13 +557,13 @@ Future<bool> _showOverrideDateDialog(String dateType) async {
         content: Text('This box already has a $dateType. Do you want to override it with the current date?'),
         actions: <Widget>[
           TextButton(
-            child: Text('No'),
+            child: const Text('No'),
             onPressed: () {
               Navigator.of(context).pop();
             },
           ),
           TextButton(
-            child: Text('Yes'),
+            child: const Text('Yes'),
             onPressed: () {
               overwrite = true;
               Navigator.of(context).pop();

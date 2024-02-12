@@ -9,10 +9,10 @@ class BoxScanningPage extends StatefulWidget {
   final Function(String) onBoxScanned;
 
   const BoxScanningPage({
-    Key? key,
+    super.key,
     required this.batchDeliveryId,
     required this.onBoxScanned,
-  }) : super(key: key);
+  });
 
   @override
   State<BoxScanningPage> createState() => _BoxScanningPageState();

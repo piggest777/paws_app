@@ -36,8 +36,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
         .map((item) => DropdownMenuItem(value: item, child: Text(item)))
         .toList();
 
-    // Optionally add a "Custom..." option
-    dropdownItems.add(DropdownMenuItem(
+    dropdownItems.add(const DropdownMenuItem(
       value: 'Custom...',
       child: Text('Custom...'),
     ));
@@ -45,7 +44,19 @@ class _CustomDropdownState extends State<CustomDropdown> {
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
         labelText: widget.hint,
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
+        // Add suffix icon only if a value is selected
+        suffixIcon: _selectedValue != null
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  setState(() {
+                    _selectedValue = null; // Clear the current value
+                  });
+                  widget.onChanged(null); // Notify about the change
+                },
+              )
+            : null,
       ),
       value: _selectedValue,
       items: dropdownItems,
@@ -59,7 +70,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
           widget.onChanged(newValue);
         }
       },
-      hint: _selectedValue == null ? Text("Choose one...") : null,
+      hint: _selectedValue == null ? const Text("Choose one...") : null,
     );
   }
 
@@ -68,24 +79,22 @@ class _CustomDropdownState extends State<CustomDropdown> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Enter Custom Value'),
+          title: const Text('Enter Custom Value'),
           content: TextField(
             controller: _customController,
-            decoration: InputDecoration(hintText: "Custom Value"),
+            decoration: const InputDecoration(hintText: "Custom Value"),
             autofocus: true,
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('OK'),
+              child: const Text('OK'),
               onPressed: () {
                 final customValue = _customController.text;
                 if (customValue.isNotEmpty) {
                   setState(() {
                     _selectedValue = customValue;
-                    widget.items.add(customValue); // Add custom value to the list
                   });
                   widget.onChanged(customValue);
-                  widget.onAddItem(customValue); // Trigger addition in provider or Firebase
                 }
                 Navigator.of(context).pop();
               },

@@ -107,7 +107,7 @@ class RequestCard extends StatelessWidget {
   }
 
     Widget _buildBoxStatusSummary() {
-    Map<String, int> boxStatusCounts = request.boxStatusCounts ?? {};
+    Map<String, int> boxStatusCounts = request.boxStatusCounts;
 
     return boxStatusCounts.isNotEmpty
         ? Padding(

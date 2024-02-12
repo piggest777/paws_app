@@ -6,7 +6,7 @@ import 'package:paws_app/src/views/batch_delivery_details_page.dart';
 class BatchDeliveryCard extends StatelessWidget {
   final BatchDelivery delivery;
 
-  const BatchDeliveryCard({Key? key, required this.delivery}) : super(key: key);
+  const BatchDeliveryCard({super.key, required this.delivery});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class BatchDeliveryCard extends StatelessWidget {
           backgroundColor: Theme.of(context).primaryColor,
           child: Text(
             delivery.id,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
         ),
         title: Text('Delivery on $formattedDate'),

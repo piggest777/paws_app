@@ -2,11 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/batch_delivery.dart';
 import 'package:paws_app/src/views/batch_delivery_details_page.dart';
-import 'package:paws_app/src/views/box_scanning_page.dart';
 import 'package:paws_app/src/views/view_components/batch_delivery_card.dart';
 
 class SentItemsManagerPage extends StatelessWidget {
-  const SentItemsManagerPage({Key? key}) : super(key: key);
+  const SentItemsManagerPage({super.key});
 
   Future<void> _createNewBatchDelivery(BuildContext context) async {
     // Get the current counter value and increment it
@@ -52,8 +51,8 @@ class SentItemsManagerPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _createNewBatchDelivery(context),
         heroTag: 'sentItemsFAB',
-        child: const Icon(Icons.add),
         tooltip: 'Create New Batch Delivery',
+        child: const Icon(Icons.add),
       ),
     );
   }

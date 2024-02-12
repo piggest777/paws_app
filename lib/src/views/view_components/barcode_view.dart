@@ -4,7 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 class BarcodeImageWidget extends StatelessWidget {
   final String barcodeValue;
 
-  BarcodeImageWidget({required this.barcodeValue});
+  const BarcodeImageWidget({super.key, required this.barcodeValue});
 
   @override
   Widget build(BuildContext context) {
@@ -21,8 +21,8 @@ class BarcodeImageWidget extends StatelessWidget {
         ),
          // Add some spacing between the QR code and text
         Text(
-          '$barcodeValue',
-          style: TextStyle(
+          barcodeValue,
+          style: const TextStyle(
             fontSize: 16,
           ),
         ),

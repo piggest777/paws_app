@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 class AddSupplyPage extends StatefulWidget {
   final String? initialBarcode;
 
-  AddSupplyPage({this.initialBarcode});
+  const AddSupplyPage({super.key, this.initialBarcode});
 
   @override
   _AddSupplyPageState createState() => _AddSupplyPageState();
@@ -28,10 +28,6 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
   TextEditingController barcodeController = TextEditingController();
   TextEditingController manufacturerController = TextEditingController();
   TextEditingController weightController = TextEditingController();
-  TextEditingController _forWhomCustomController = TextEditingController();
-  TextEditingController _supplyTypeCustomController = TextEditingController();
-  TextEditingController _foodTypeCustomController = TextEditingController();
-  TextEditingController _packagingCustomController = TextEditingController();
 
   @override
   void initState() {
@@ -72,7 +68,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
     if (name.isEmpty) {
       // Show an error message for name
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please enter a name'),
         ),
       );
@@ -86,7 +82,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
       } catch (e) {
         // Show an error message for invalid barcode format
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content:
                 Text('Invalid barcode format. Please enter a valid integer'),
           ),
@@ -99,7 +95,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
     if (weight.isEmpty) {
       // Show an error message for weight
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Please enter a weight'),
         ),
       );
@@ -111,7 +107,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
     if (weightValue == null || weightValue <= 0) {
       // Show an error message for invalid or non-positive weight
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text(
               'Invalid weight format. Please enter a valid positive number'),
         ),
@@ -157,10 +153,10 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Supply Item'),
+        title: const Text('Add Supply Item'),
         actions: [
           IconButton(
-            icon: Icon(Icons.check),
+            icon: const Icon(Icons.check),
             onPressed: () async {
               final name = nameController.text;
               final barcode = barcodeController.text.isNotEmpty
@@ -217,7 +213,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextFormField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Name',
                   border: OutlineInputBorder(),
                 ),
@@ -229,14 +225,15 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Barcode (optional)',
                   border: OutlineInputBorder(),
                 ),
                 controller: barcodeController,
-                keyboardType: TextInputType.numberWithOptions(decimal: false),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: false),
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
                     // Check if the barcode can be parsed as a double
@@ -249,208 +246,71 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
                   return null;
                 },
               ),
-              // SizedBox(height: 16),
-// ChangeNotifierProvider(
-//   create: (_) => DropdownItemsProvider(['Dogs', 'Puppies', 'Cats', 'Rodents', 'Common']),
-//   builder: (context, _) {
-//     return CustomDropdown(
-//       items: Provider.of<DropdownItemsProvider<String>>(context, listen: true).items,
-//       selectedValue: selectedForWhom, // Use the selectedForWhom variable to set the selected value
-//       onChanged: (value) {
-//         // Update the selectedForWhom variable with the newly selected value
-//         setState(() {
-//           selectedForWhom = value;
-//         });
-//         // Optionally, if you're using a provider to manage state globally, update it here as well
-//         // context.read<YourGlobalStateProvider>().updateSelectedForWhom(value);
-//       },
-//       onAddItem: (newItem) {
-//         // Add the new item to the provider's list
-//         Provider.of<DropdownItemsProvider<String>>(context, listen: false).addItem(newItem);
-//         // Update the selectedForWhom variable with the newly added item
-//         setState(() {
-//           selectedForWhom = newItem;
-//         });
-//         // Optionally, save the new item or update global state as needed
-//         // context.read<YourGlobalStateProvider>().updateSelectedForWhom(newItem);
-//       },
-//       hint: 'Select or add a pet type',
-//     );
-//   },
-// ),
-
-              // SizedBox(height: 16),
-              // ChangeNotifierProvider(
-              //   create: (_) => DropdownItemsProvider([
-              //     'Food',
-              //     'Medical',
-              //     'Clothes',
-              //     'Toys',
-              //     'Leashes',
-              //     'Cages',
-              //     'Common'
-              //   ]),
-              //   builder: (context, _) {
-              //     return CustomDropdown(
-              //       items: Provider.of<DropdownItemsProvider>(context,
-              //               listen: true)
-              //           .items,
-              //       selectedValue: Provider.of<DropdownItemsProvider>(context)
-              //           .selectedItem,
-              //       onChanged: (value) {
-              //         Provider.of<DropdownItemsProvider>(context, listen: false)
-              //             .setSelectedItem(value);
-              //             selectedSupplyType = value;
-              //       },
-              //       onAddItem: (newItem) {
-              //         Provider.of<DropdownItemsProvider>(context, listen: false)
-              //             .addItem(newItem);
-              //             selectedSupplyType = newItem;
-              //         // Here you can also add the logic to save the new item to Firebase
-              //       },
-              //       hint: 'Select or add a pet supply type',
-              //     );
-              //   },
-              // ),
-              // SizedBox(height: 16),
-              // if (selectedSupplyType == 'Food') ...[
-              //   ChangeNotifierProvider(
-              //     create: (_) => DropdownItemsProvider(['Wet', 'Dry']),
-              //     builder: (context, _) {
-              //       return CustomDropdown(
-              //         items: Provider.of<DropdownItemsProvider>(context,
-              //                 listen: true)
-              //             .items,
-              //         selectedValue: Provider.of<DropdownItemsProvider>(context)
-              //             .selectedItem,
-              //         onChanged: (value) {
-              //           Provider.of<DropdownItemsProvider>(context,
-              //                   listen: false)
-              //               .setSelectedItem(value);
-              //               selectedFoodType = value;
-              //         },
-              //         onAddItem: (newItem) {
-              //           Provider.of<DropdownItemsProvider>(context,
-              //                   listen: false)
-              //               .addItem(newItem);
-              //               selectedFoodType = newItem;
-              //           // Here you can also add the logic to save the new item to Firebase
-              //         },
-              //         hint: 'Select or add a food type',
-              //       );
-              //     },
-              //   ),
-              // ],
-              // SizedBox(height: 16),
-              // ChangeNotifierProvider(
-              //   create: (_) => DropdownItemsProvider([
-              //     'Bugs',
-              //     'Tins',
-              //     'Jars',
-              //     'Tube',
-              //     'None',
-              //   ]),
-              //   builder: (context, _) {
-              //     return CustomDropdown(
-              //       items: Provider.of<DropdownItemsProvider>(context,
-              //               listen: true)
-              //           .items,
-              //       selectedValue: Provider.of<DropdownItemsProvider>(context)
-              //           .selectedItem,
-              //       onChanged: (value) {
-              //         Provider.of<DropdownItemsProvider>(context, listen: false)
-              //             .setSelectedItem(value);
-              //             selectedPackaging = value;
-              //       },
-              //       onAddItem: (newItem) {
-              //         Provider.of<DropdownItemsProvider>(context, listen: false)
-              //             .addItem(newItem);
-              //             selectedPackaging = newItem;
-              //         // Here you can also add the logic to save the new item to Firebase
-              //       },
-              //       hint: 'Select or add a package type',
-              //     );
-              //   },
-              // ),
-              // CustomDropdown<String>(
-              //   items: ['Dogs', 'Puppies', 'Cats', 'Rodents', 'Common'],
-              //   selectedValue: null,
-              //   onChanged: (value) {
-              //     selectedForWhom = value;
-              //   },
-              //   hint: 'For Whom',
-              //   allowCustom: true,
-              //   customController: _forWhomCustomController,
-              // ),
-
-              // SizedBox(height: 20),
-              // CustomDropdown<String>(
-              //   items: [
-              //     'Food',
-              //     'Medical',
-              //     'Clothes',
-              //     'Toys',
-              //     'Leashes',
-              //     'Cages',
-              //     'Common'
-              //   ],
-              //   selectedValue: selectedSupplyType,
-              //   onChanged: (value) {
-              //     setState(() {
-              //       selectedSupplyType = value;
-              //     });
-              //   },
-              //   hint: 'Supply Type',
-              //   allowCustom: true,
-              //   customController: _supplyTypeCustomController,
-              // ),
-              // // Conditionally show the Food Type dropdown
-              // if (selectedSupplyType == 'Food') ...[
-              //   SizedBox(height: 20),
-              //   CustomDropdown<String>(
-              //     items: ['Wet', 'Dry'],
-              //     selectedValue: selectedFoodType,
-              //     onChanged: (value) {
-              //       setState(() {
-              //         selectedFoodType = value;
-              //       });
-              //     },
-              //     hint: 'Food Type',
-              //     allowCustom: true,
-              //     customController: _foodTypeCustomController,
-              //   ),
-              // ],
-              // SizedBox(height: 20),
-              // CustomDropdown<String>(
-              //   items: [
-              //     'Bugs','Tins', 'Jars', 'Tube', 'None', // Predefined options
-              //   ],
-              //   selectedValue: selectedPackaging,
-              //   onChanged: (value) {
-              //     setState(() {
-              //       selectedPackaging = value;
-              //     });
-              //   },
-              //   hint: 'Packaging',
-              //   allowCustom: true,
-              //   customController: _packagingCustomController,
-              // ),
-              SizedBox(height: 20),
+              const SizedBox(height: 16),
+              buildDropdown(
+                items: ['Dogs', 'Puppies', 'Cats', 'Rodents', 'Common'],
+                selectedValue: selectedForWhom,
+                onChanged: (value) => setState(() => selectedForWhom = value),
+                onAddItem: (newItem) => {/* Handle addition */},
+                hint: 'Select or add a pet type',
+              ),
+              const SizedBox(height: 16),
+              buildDropdown(
+                items: [
+                  'Food',
+                  'Medical',
+                  'Clothes',
+                  'Toys',
+                  'Leashes',
+                  'Cages',
+                  'Common'
+                ],
+                selectedValue: selectedSupplyType,
+                onChanged: (value) {
+                  setState(() {
+                    selectedSupplyType = value;
+                    if (value != 'Food') {
+                      selectedFoodType = null; // Reset food type if not 'Food'
+                    }
+                  });
+                },
+                onAddItem: (newItem) => {/* Handle addition */},
+                hint: 'Select or add a pet supply type',
+              ),
+              const SizedBox(height: 16),
+              buildDropdown(
+                items: ['Wet', 'Dry'],
+                selectedValue: selectedFoodType,
+                onChanged: (value) => setState(() => selectedFoodType = value),
+                onAddItem: (newItem) => {/* Handle addition */},
+                hint: 'Select or add a food type',
+                isFoodType: true, // This dropdown is conditionally displayed
+              ),
+              buildDropdown(
+                items: ['Bags', 'Tins', 'Jars', 'Boxes', 'None'],
+                selectedValue: selectedPackaging,
+                onChanged: (value) {
+                  setState(() => selectedPackaging = value);
+                },
+                onAddItem: (newItem) => { },
+                hint: 'Select or add a package type',
+              ),
+              const SizedBox(height: 20),
               TextFormField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Manufacturer (optional)',
                   border: OutlineInputBorder(),
                 ),
                 controller: manufacturerController,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Weight (kg)',
                   border: OutlineInputBorder(),
                 ),
                 controller: weightController,
-                keyboardType: TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                     decimal: true), // Decimal keypad
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
@@ -478,9 +338,45 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
         onPressed: () {
           scanBarcode();
         },
-        child: Icon(Icons.barcode_reader),
         tooltip: 'Save',
+        child: const Icon(Icons.barcode_reader),
       ),
     );
   }
+
+Widget buildDropdown({
+  required List<String> items,
+  String? selectedValue,
+  required Function(String?) onChanged,
+  required Function(String) onAddItem,
+  required String hint,
+  bool isFoodType = false,
+}) {
+  if (isFoodType && selectedSupplyType != 'Food') {
+    return SizedBox.shrink(); // Conditional display logic
+  }
+
+  return ChangeNotifierProvider<DropdownItemsProvider<String>>(
+    create: (_) => DropdownItemsProvider<String>(items),
+    child: Consumer<DropdownItemsProvider<String>>(
+      builder: (context, provider, _) {
+        return CustomDropdown(
+          items: provider.items,
+          selectedValue: selectedValue,
+          onChanged: (String? value) {
+            onChanged(value);
+            if (value != null && !provider.items.contains(value)) {
+              provider.addItem(value); // Ensures new item is added to provider
+            }
+          },
+          onAddItem: (String newItem) {
+            provider.addItem(newItem); // This adds the item to the provider's list
+            onAddItem(newItem); // Handle any additional logic for adding the item
+          },
+          hint: hint,
+        );
+      },
+    ),
+  );
+}
 }

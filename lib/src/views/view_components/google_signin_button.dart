@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/main.dart';
-import 'package:paws_app/src/views/request_view.dart';
 
 import '../../services/auth_service.dart';
 

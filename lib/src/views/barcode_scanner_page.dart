@@ -4,7 +4,7 @@ import 'package:qr_code_scanner/qr_code_scanner.dart';
 class BarcodeScannerPage extends StatefulWidget {
   final Function(String) onBarcodeScanned;
 
-  BarcodeScannerPage({required this.onBarcodeScanned});
+  const BarcodeScannerPage({super.key, required this.onBarcodeScanned});
 
   @override
   _BarcodeScannerPageState createState() => _BarcodeScannerPageState();
@@ -39,7 +39,7 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Barcode Scanner'),
+        title: const Text('Barcode Scanner'),
       ),
       body: Stack(
         alignment: Alignment.center,
@@ -59,11 +59,11 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
             Positioned(
               top: 20,
               child: Container(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 color: Colors.white,
                 child: Text(
                   scannedData,
-                  style: TextStyle(fontSize: 20),
+                  style: const TextStyle(fontSize: 20),
                 ),
               ),
             ),

@@ -4,7 +4,7 @@ import 'package:paws_app/src/models/pet_care_supply_type.dart';
 class PetSupplyListItem extends StatelessWidget {
   final PetCareSupply supply;
 
-  PetSupplyListItem({required this.supply});
+  const PetSupplyListItem({super.key, required this.supply});
 
   @override
   Widget build(BuildContext context) {
@@ -12,15 +12,15 @@ class PetSupplyListItem extends StatelessWidget {
 
     return Card(
       elevation: 4,
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        contentPadding: EdgeInsets.all(16),
+        contentPadding: const EdgeInsets.all(16),
         title: Text(
           supply.name,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -33,26 +33,26 @@ class PetSupplyListItem extends StatelessWidget {
               children: <Widget>[
                 Text(
                   'Count: ${supply.count}',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   'Total: ${totalWeight.toStringAsFixed(2)} kg',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            SizedBox(height: 8), // Add some spacing
+            const SizedBox(height: 8), // Add some spacing
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
                   'Basic: ${supply.weight.toStringAsFixed(2)} kg',
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 if (supply.manufacturer != null)
                   Text(
                     'Man.: ${supply.manufacturer}',
-                    style: TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                   ),
               ],
             ),
@@ -61,7 +61,7 @@ class PetSupplyListItem extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Row(
                   children: <Widget>[
-                    Text(
+                    const Text(
                       'Barcode: ',
                       style: TextStyle(
                         fontSize: 16,
@@ -70,7 +70,7 @@ class PetSupplyListItem extends StatelessWidget {
                     ),
                     Text(
                       supply.barcode!,
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ],
                 ),

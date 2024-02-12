@@ -6,10 +6,10 @@ class WeightInputWidget extends StatefulWidget {
   final ValueChanged<double> onWeightChanged;
 
   const WeightInputWidget({
-    Key? key,
+    super.key,
     this.initialWeight = 0.0,
     required this.onWeightChanged,
-  }) : super(key: key);
+  });
 
   @override
   _WeightInputWidgetState createState() => _WeightInputWidgetState();
@@ -88,7 +88,7 @@ class _WeightInputWidgetState extends State<WeightInputWidget> {
                 labelText: 'Weight (kg)',
                 border: OutlineInputBorder(),
               ),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')), // Allow only decimal numbers
               ],
@@ -102,12 +102,11 @@ class _WeightInputWidgetState extends State<WeightInputWidget> {
           ),
           const SizedBox(width: 5),
           TextButton(
-            onPressed: hasChanges ? _saveWeight : null, // Disable if no changes
-            child: const Text('Save'),
+            onPressed: hasChanges ? _saveWeight : null,
             style: TextButton.styleFrom(
-              primary: Colors.white, // Text color
-              backgroundColor: hasChanges ? myColor : Colors.grey, // Background color changes based on hasChanges
-            ),
+              foregroundColor: Colors.white, backgroundColor: hasChanges ? myColor : Colors.grey, // Background color changes based on hasChanges
+            ), // Disable if no changes
+            child: const Text('Save'),
           ),
           const SizedBox(width: 5),
         ],

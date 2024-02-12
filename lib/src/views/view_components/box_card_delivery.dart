@@ -5,7 +5,7 @@ import 'package:paws_app/src/views/box_detail_page.dart';
 class BoxCardDelivery extends StatelessWidget {
   final Box box;
 
-  const BoxCardDelivery({Key? key, required this.box}) : super(key: key);
+  const BoxCardDelivery({super.key, required this.box});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class BoxCardDelivery extends StatelessWidget {
           ),
         ),
       ),
-      title: Text(box.requesterName ?? 'Unknown'),
+      title: Text(box.requesterName),
       subtitle: Text('Weight: ${box.weight.toStringAsFixed(2)} kg'),
       trailing: const Icon(Icons.chevron_right),
       onTap: () {

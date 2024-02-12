@@ -27,7 +27,7 @@ class BoxCard extends StatelessWidget {
       BoxStatusUtil.getIconForStatus(box.status),
       const SizedBox(width: 10),
       Text(
-        box.requesterName ?? 'Unknown', // Fallback to 'Unknown' if null
+        box.requesterName, // Fallback to 'Unknown' if null
         style: const TextStyle(fontSize: 14),
       ),
     ],

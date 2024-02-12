@@ -9,7 +9,7 @@ import 'package:paws_app/src/views/supply_item_details.dart';
 import 'package:paws_app/src/views/view_components/pet_supply_list_item.dart';
 
 class StoragePage extends StatefulWidget {
-  const StoragePage({Key? key}) : super(key: key);
+  const StoragePage({super.key});
 
   @override
   _StoragePageState createState() => _StoragePageState();
@@ -93,17 +93,17 @@ class _StoragePageState extends State<StoragePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Storage'),
+        title: const Text('Storage'),
         actions: <Widget>[
           IconButton(
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => AddSupplyPage(),
+                  builder: (context) => const AddSupplyPage(),
                 ),
               );
             },
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
           ),
         ],
       ),
@@ -111,13 +111,13 @@ class _StoragePageState extends State<StoragePage> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ScanBarcodePage(),
+              builder: (context) => const ScanBarcodePage(),
             ),
           );
         },
-        child: Icon(Icons.qr_code_scanner),
         heroTag: 'scanItemFAB',
         tooltip: 'Scan Barcode',
+        child: const Icon(Icons.qr_code_scanner),
       ),
       body: Column(
         children: <Widget>[
@@ -127,12 +127,12 @@ class _StoragePageState extends State<StoragePage> {
               controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Search by name or barcode',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
-                  icon: Icon(Icons.clear),
+                  icon: const Icon(Icons.clear),
                   onPressed: clearSearch,
                 ),
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
               ),
               onChanged: filterSupplies,
             ),

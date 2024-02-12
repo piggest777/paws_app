@@ -7,13 +7,14 @@ import 'package:paws_app/src/views/view_components/barcode_view.dart';
 import 'package:paws_app/src/views/view_components/counter_widget.dart';
 
 class SupplyItemDetailsPage extends StatefulWidget {
-  final PetCareSupply supplyItem; // PetCareSupply object (required)
+  final PetCareSupply supplyItem; // Now final
 
-  SupplyItemDetailsPage({required this.supplyItem});
+  const SupplyItemDetailsPage({super.key, required this.supplyItem});
 
   @override
   State<SupplyItemDetailsPage> createState() => _SupplyItemDetailsPageState();
 }
+
 
 class _SupplyItemDetailsPageState extends State<SupplyItemDetailsPage> {
   late double counterValue;
@@ -65,23 +66,35 @@ void dispose() {
   super.dispose();
 }
 
+Future<void> _navigateAndEditSupply(BuildContext context) async {
+  final PetCareSupply? updatedItem = await Navigator.of(context).push<PetCareSupply>(
+    MaterialPageRoute(
+      builder: (context) => EditSupplyPage(supplyItem: widget.supplyItem),
+    ),
+  );
+
+  if (updatedItem != null) {
+    setState(() {
+      // Update a state variable or directly use updatedItem for UI updates
+      // For example, if you have a state variable for each field of PetCareSupply, update them here
+    });
+  }
+}
+
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Supply Item Details'),
-          actions: [
-    IconButton(
-      icon: Icon(Icons.edit),
-      onPressed: () {
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => EditSupplyPage(supplyItem: widget.supplyItem),
-        ));
-      },
+    appBar: AppBar(
+      title: const Text('Supply Item Details'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed:  () => _navigateAndEditSupply(context),
+        ),
+      ],
     ),
-  ],
-      ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -90,11 +103,11 @@ void dispose() {
             children: [
               if (widget.supplyItem.barcode != null)
                 BarcodeImageWidget(barcodeValue: widget.supplyItem.barcode!),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               buildStyledNameText(context),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               buildBasicInfoCard(context),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               
       Card(
         elevation: 4,
@@ -114,7 +127,7 @@ void dispose() {
           ),
         ),
       ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               CounterCardWidget(
               key: ValueKey(counterValue), // Add this line
               initialValue: counterValue, 
@@ -134,15 +147,15 @@ Widget buildStyledNameText(BuildContext context) {
       Center(
         child: Text(
           widget.supplyItem.name,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 24, // Adjust the font size as needed
             fontWeight: FontWeight.bold,
             color: Color.fromARGB(255, 1, 57, 103), // Replace with your desired accent color
           ),
         ),
       ),
-      SizedBox(height: 8), // Add some space below the text
-      Divider(
+      const SizedBox(height: 8), // Add some space below the text
+      const Divider(
         color: Color.fromARGB(255, 1, 57, 103), // Use the same accent color
         thickness: 2, // Adjust the thickness as needed
       ),
@@ -164,7 +177,7 @@ Widget buildBasicInfoCard(BuildContext context) {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Basic Weight:',
                 style: TextStyle(
                   fontSize: 16, // Adjust the font size as needed
@@ -173,17 +186,17 @@ Widget buildBasicInfoCard(BuildContext context) {
               ),
               Text(
                 '${widget.supplyItem.weight} kg',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16, // Adjust the font size as needed
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8), // Add some space between the basic weight and manufacturer
+          const SizedBox(height: 8), // Add some space between the basic weight and manufacturer
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 'Manufacturer:',
                 style: TextStyle(
                   fontSize: 16, // Adjust the font size as needed
@@ -191,8 +204,8 @@ Widget buildBasicInfoCard(BuildContext context) {
                 ),
               ),
               Text(
-                '${widget.supplyItem.manufacturer ?? 'N/A'}',
-                style: TextStyle(
+                widget.supplyItem.manufacturer ?? 'N/A',
+                style: const TextStyle(
                   fontSize: 16, // Adjust the font size as needed
                 ),
               ),
@@ -212,14 +225,14 @@ Widget buildTypeDetailCard(String title, String? value) {
       children: [
         Text(
           title,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           value ?? 'N/A',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
           ),
         ),

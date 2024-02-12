@@ -9,7 +9,7 @@ class FirebaseService {
       await _firestore.collection('petSupplyType').add(supplyItem.toMap());
     } catch (error) {
       print('Error adding supply item to Firebase: $error');
-      throw error;
+      rethrow;
     }
   }
 
@@ -19,7 +19,7 @@ class FirebaseService {
       print("Supply item updated successfully.");
     } catch (e) {
       print("Error updating supply item: $e");
-      throw e; 
+      rethrow; 
     }
   }
 

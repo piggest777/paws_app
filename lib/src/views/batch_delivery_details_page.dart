@@ -7,8 +7,7 @@ import 'package:paws_app/src/views/view_components/box_card_delivery.dart';
 class BatchDeliveryDetailsPage extends StatefulWidget {
   final String batchDeliveryId;
 
-  const BatchDeliveryDetailsPage({Key? key, required this.batchDeliveryId})
-      : super(key: key);
+  const BatchDeliveryDetailsPage({super.key, required this.batchDeliveryId});
 
   @override
   State<BatchDeliveryDetailsPage> createState() =>
@@ -25,7 +24,7 @@ class _BatchDeliveryDetailsPageState extends State<BatchDeliveryDetailsPage> {
         .get();
 
     var fetchedBoxes = snapshot.docs
-        .map((doc) => Box.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .map((doc) => Box.fromMap(doc.data(), doc.id))
         .toList();
 
     setState(() {
@@ -77,8 +76,8 @@ class _BatchDeliveryDetailsPageState extends State<BatchDeliveryDetailsPage> {
             onBoxScanned: onBoxScanned,
           ),
         )),
-        child: const Icon(Icons.qr_code_scanner),
         tooltip: 'Scan More Boxes',
+        child: const Icon(Icons.qr_code_scanner),
       ),
     );
   }
