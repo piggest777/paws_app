@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
+import 'package:paws_app/src/services/admin_service.dart';
 import 'package:paws_app/src/views/add_supply_page.dart';
 import 'package:paws_app/src/views/scan_supply_page.dart';
 import 'package:paws_app/src/views/supply_item_details.dart';
@@ -20,6 +21,7 @@ class _StoragePageState extends State<StoragePage> {
   List<PetCareSupply> displayedSupplies = [];
   TextEditingController searchController = TextEditingController();
   StreamSubscription<QuerySnapshot>? suppliesSubscription;
+   final PetSupplyService _service = PetSupplyService();
 
   @override
   void initState() {
@@ -77,7 +79,9 @@ class _StoragePageState extends State<StoragePage> {
   void navigateToSupplyDetail(PetCareSupply supply) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => SupplyItemDetailsPage(supplyItem: supply),
+        builder: (context) => SupplyItemDetailsPage(
+          key: ValueKey(supply.id),
+          supplyItem: supply),
       ),
     );
   }
@@ -104,6 +108,16 @@ class _StoragePageState extends State<StoragePage> {
               );
             },
             icon: const Icon(Icons.add),
+          ),
+                    IconButton(
+            icon: const Icon(Icons.update),
+            onPressed: () async {
+              await _service.updateSuppliesForWhom();
+              // Optionally, show a snackbar or dialog to indicate completion
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Supplies updated successfully')),
+              );
+            },
           ),
         ],
       ),

@@ -7,9 +7,9 @@ import 'package:paws_app/src/views/view_components/barcode_view.dart';
 import 'package:paws_app/src/views/view_components/counter_widget.dart';
 
 class SupplyItemDetailsPage extends StatefulWidget {
-  final PetCareSupply supplyItem; // Now final
+  PetCareSupply supplyItem;
 
-  const SupplyItemDetailsPage({super.key, required this.supplyItem});
+  SupplyItemDetailsPage({Key? key, required this.supplyItem}) : super(key: key);
 
   @override
   State<SupplyItemDetailsPage> createState() => _SupplyItemDetailsPageState();
@@ -75,8 +75,8 @@ Future<void> _navigateAndEditSupply(BuildContext context) async {
 
   if (updatedItem != null) {
     setState(() {
-      // Update a state variable or directly use updatedItem for UI updates
-      // For example, if you have a state variable for each field of PetCareSupply, update them here
+      widget.supplyItem = updatedItem; // Update the supplyItem with the updated information
+      // Depending on your implementation, you might need to refresh the page or certain widgets explicitly.
     });
   }
 }

@@ -5,6 +5,7 @@ import 'package:paws_app/src/models/request.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paws_app/src/services/pdf_manager.dart';
 import 'package:paws_app/src/utils/box_status_util.dart';
+import 'package:paws_app/src/views/box_item_page.dart';
 import 'package:paws_app/src/views/request_detatil_page.dart';
 import 'package:paws_app/src/views/view_components/box_weight.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -50,6 +51,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     if (widget.box != null && widget.request != null) {
       // Both Box and Request objects are provided
       box = widget.box;
+      boxId = box?.id;
       request = widget.request;
       selectedSize = widget.box?.size;
       selectedType = widget.box?.type;
@@ -147,7 +149,17 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
       appBar: AppBar(
         title: const Text('Box Details'),
         actions: [
-          _buildDeleteButton(), // Place the delete button in the AppBar
+          IconButton(
+            icon: const Icon(Icons.add_box),
+            onPressed: () {
+
+              if (boxId != null) 
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                    builder: (context) => BoxItemsPage(boxId: boxId!)),
+              );
+            },
+          ), // Place the delete button in the AppBar
         ],
       ),
       body: Center(
@@ -186,15 +198,15 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                 _buildBoxDetailsCard(),
                 const SizedBox(height: 5),
                 WeightInputWidget(
-                initialWeight: box?.weight ?? 0.0,
-                onWeightChanged: (newWeight) {
-                  setState(() {
-                    box?.weight = newWeight;
-                  });
-                  // Optionally, update the weight in your database
-                  _updateBoxWeightInFirebase(newWeight);
-                },
-              ),
+                  initialWeight: box?.weight ?? 0.0,
+                  onWeightChanged: (newWeight) {
+                    setState(() {
+                      box?.weight = newWeight;
+                    });
+                    // Optionally, update the weight in your database
+                    _updateBoxWeightInFirebase(newWeight);
+                  },
+                ),
                 const SizedBox(height: 5),
                 _buildStatusCard(),
                 const SizedBox(height: 5),
@@ -215,6 +227,18 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                             onPressed: () => _navigateToRequestDetails(context),
                             child: const Text('View Request Details'),
                           ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red),
+                            onPressed: () {
+                              _showDeleteConfirmationDialog();
+                            },
+                            child: Text('Delete Box'),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -227,18 +251,19 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   }
 
   void _updateBoxWeightInFirebase(double newWeight) {
-  if (box?.id != null) {
-    FirebaseFirestore.instance
-        .collection('boxes')
-        .doc(box!.id)
-        .update({'weight': newWeight})
-        .then((_) => _showSnackbar('Weight updated successfully', Colors.green))
-        .catchError((error) => _showSnackbar('Error updating weight: $error', Colors.red));
-  } else {
-    _showSnackbar('Error: Box ID is not available', Colors.red);
+    if (box?.id != null) {
+      FirebaseFirestore.instance
+          .collection('boxes')
+          .doc(box!.id)
+          .update({'weight': newWeight})
+          .then(
+              (_) => _showSnackbar('Weight updated successfully', Colors.green))
+          .catchError((error) =>
+              _showSnackbar('Error updating weight: $error', Colors.red));
+    } else {
+      _showSnackbar('Error: Box ID is not available', Colors.red);
+    }
   }
-}
-
 
   void _createAndSharePdf() async {
     if (widget.box?.id != null || boxId != null) {
@@ -507,74 +532,82 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     _updateStatusInFirebase(BoxStatus.values[newIndex], oldStatus);
   }
 
-void _updateStatusInFirebase(BoxStatus newStatus, BoxStatus? oldStatus) async {
-  if (box?.id != null) {
-    DateTime now = DateTime.now();
-    Map<String, dynamic> updates = {'status': newStatus.toString().split('.').last};
+  void _updateStatusInFirebase(
+      BoxStatus newStatus, BoxStatus? oldStatus) async {
+    if (box?.id != null) {
+      DateTime now = DateTime.now();
+      Map<String, dynamic> updates = {
+        'status': newStatus.toString().split('.').last
+      };
 
-    // Check for packing date update
-    if (newStatus == BoxStatus.packed && box?.packingDate == null) {
-      updates['packingDate'] = now;
-      box!.packingDate = now;  // Update local box object
-    } else if (newStatus == BoxStatus.packed && box?.packingDate != null) {
-      bool overwrite = await _showOverrideDateDialog('Packing Date');
-      if (overwrite) {
+      // Check for packing date update
+      if (newStatus == BoxStatus.packed && box?.packingDate == null) {
         updates['packingDate'] = now;
-        box!.packingDate = now;  // Update local box object
+        box!.packingDate = now; // Update local box object
+      } else if (newStatus == BoxStatus.packed && box?.packingDate != null) {
+        bool overwrite = await _showOverrideDateDialog('Packing Date');
+        if (overwrite) {
+          updates['packingDate'] = now;
+          box!.packingDate = now; // Update local box object
+        }
       }
-    }
 
-    // Check for sending date update
-    if (newStatus == BoxStatus.sended && box?.sendingDate == null) {
-      updates['sendingDate'] = now;
-      box!.sendingDate = now;  // Update local box object
-    } else if (newStatus == BoxStatus.sended && box?.sendingDate != null) {
-      bool overwrite = await _showOverrideDateDialog('Sending Date');
-      if (overwrite) {
+      // Check for sending date update
+      if (newStatus == BoxStatus.sended && box?.sendingDate == null) {
         updates['sendingDate'] = now;
-        box!.sendingDate = now;  // Update local box object
+        box!.sendingDate = now; // Update local box object
+      } else if (newStatus == BoxStatus.sended && box?.sendingDate != null) {
+        bool overwrite = await _showOverrideDateDialog('Sending Date');
+        if (overwrite) {
+          updates['sendingDate'] = now;
+          box!.sendingDate = now; // Update local box object
+        }
       }
+
+      FirebaseFirestore.instance
+          .collection('boxes')
+          .doc(box!.id)
+          .update(updates)
+          .then(
+              (_) => _showSnackbar('Status updated successfully', Colors.green))
+          .catchError((error) =>
+              _showSnackbar('Error updating status: $error', Colors.red));
+
+      await _updateBoxCountsInRequestDocument(newStatus, oldStatus);
+    } else {
+      _showSnackbar('Error: Box ID is not available', Colors.red);
     }
-
-    FirebaseFirestore.instance.collection('boxes').doc(box!.id)
-      .update(updates)
-      .then((_) => _showSnackbar('Status updated successfully', Colors.green))
-      .catchError((error) => _showSnackbar('Error updating status: $error', Colors.red));
-
-    await _updateBoxCountsInRequestDocument(newStatus, oldStatus);
-  } else {
-    _showSnackbar('Error: Box ID is not available', Colors.red);
   }
-}
 
-Future<bool> _showOverrideDateDialog(String dateType) async {
-  bool overwrite = false;
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Override $dateType?'),
-        content: Text('This box already has a $dateType. Do you want to override it with the current date?'),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('No'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text('Yes'),
-            onPressed: () {
-              overwrite = true;
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
-  return overwrite;
-}
+  Future<bool> _showOverrideDateDialog(String dateType) async {
+    bool overwrite = false;
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Override $dateType?'),
+          content: Text(
+              'This box already has a $dateType. Do you want to override it with the current date?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                overwrite = true;
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+    return overwrite;
+  }
 
   Future<void> _updateBoxCountsInRequestDocument(
       BoxStatus newStatus, BoxStatus? oldStatus) async {
@@ -715,61 +748,65 @@ Future<bool> _showOverrideDateDialog(String dateType) async {
     );
   }
 
-Future<void> _deleteBox() async {
-  if (box?.id == null || box?.requestId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Error: Box ID or Request ID is not available'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  final DocumentReference requestDocRef = FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
-
-  FirebaseFirestore.instance.runTransaction((transaction) async {
-    // Fetch the current request document
-    final DocumentSnapshot requestSnapshot = await transaction.get(requestDocRef);
-
-    if (!requestSnapshot.exists) {
-      throw Exception('Request does not exist!');
+  Future<void> _deleteBox() async {
+    if (box?.id == null || box?.requestId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: Box ID or Request ID is not available'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
-    // Get the current box status counts
-    final Map<String, dynamic> requestData = requestSnapshot.data() as Map<String, dynamic>;
-    final Map<String, dynamic> boxStatusCounts = requestData['boxStatusCounts'] as Map<String, dynamic>? ?? {};
+    final DocumentReference requestDocRef =
+        FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
 
-    // Decrease the count for the box's status
-    final String statusKey = _trimEnumName(box!.status.toString());
-    final int currentCount = boxStatusCounts[statusKey] ?? 0;
-    boxStatusCounts[statusKey] = currentCount > 0 ? currentCount - 1 : 0;
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      // Fetch the current request document
+      final DocumentSnapshot requestSnapshot =
+          await transaction.get(requestDocRef);
 
-    // Update the request document with the new box status counts
-    transaction.update(requestDocRef, {'boxStatusCounts': boxStatusCounts});
+      if (!requestSnapshot.exists) {
+        throw Exception('Request does not exist!');
+      }
 
-    // Delete the box document
-    transaction.delete(FirebaseFirestore.instance.collection('boxes').doc(box!.id));
-  }).then((_) {
-    // Navigate back after successful deletion and update
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Box deleted successfully'),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }).catchError((error) {
-    // Handle any errors here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error deleting box: $error'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  });
-}
+      // Get the current box status counts
+      final Map<String, dynamic> requestData =
+          requestSnapshot.data() as Map<String, dynamic>;
+      final Map<String, dynamic> boxStatusCounts =
+          requestData['boxStatusCounts'] as Map<String, dynamic>? ?? {};
 
+      // Decrease the count for the box's status
+      final String statusKey = _trimEnumName(box!.status.toString());
+      final int currentCount = boxStatusCounts[statusKey] ?? 0;
+      boxStatusCounts[statusKey] = currentCount > 0 ? currentCount - 1 : 0;
+
+      // Update the request document with the new box status counts
+      transaction.update(requestDocRef, {'boxStatusCounts': boxStatusCounts});
+
+      // Delete the box document
+      transaction
+          .delete(FirebaseFirestore.instance.collection('boxes').doc(box!.id));
+    }).then((_) {
+      // Navigate back after successful deletion and update
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Box deleted successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }).catchError((error) {
+      // Handle any errors here
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting box: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  }
 
   void _showDeleteConfirmationDialog() {
     showDialog(
