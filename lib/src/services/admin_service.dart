@@ -22,7 +22,7 @@ class PetSupplyService {
         if (name.contains(entry.key)) {
           // Update the document if name contains one of the keywords
           doc.reference.update({'supplyType': 'Food'});
-          print('${doc.id} with ${name} updated');
+          print('${doc.id} with $name updated');
           break; // Stop checking other entries if a match is found
         }
       }

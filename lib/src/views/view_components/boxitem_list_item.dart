@@ -7,11 +7,11 @@ class BoxItemListItem extends StatelessWidget {
   final VoidCallback onViewDetails; // Callback for viewing details
 
   const BoxItemListItem({
-    Key? key,
+    super.key,
     required this.supply,
     required this.onAdd,
     required this.onViewDetails,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +20,15 @@ class BoxItemListItem extends StatelessWidget {
       elevation: 2, // Adjust elevation as needed
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
-        title: Text(supply.name, style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(supply.name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Count: ${supply.count}, Weight: ${supply.weight} kg'),
             if (supply.barcode != null)
-              Text('Barcode: ${supply.barcode}', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text('Barcode: ${supply.barcode}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
             if (supply.manufacturer != null)
-              Text('Man.: ${supply.manufacturer}', style: TextStyle(fontSize: 12, color: Colors.grey)),
+              Text('Man.: ${supply.manufacturer}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
         trailing: _buildTrailingIcons(context),
@@ -44,16 +44,16 @@ Widget _buildTrailingIcons(BuildContext context) {
     runSpacing: 0, // Reduced space between icons vertically, if they wrap
     children: <Widget>[
       IconButton(
-        icon: Icon(Icons.add_circle_outline, color: myColor),
+        icon: const Icon(Icons.add_circle_outline, color: myColor),
         onPressed: onAdd,
         padding: EdgeInsets.zero, // Reduce padding to make the layout more compact
-        constraints: BoxConstraints(), // Remove constraints to allow for smaller padding
+        constraints: const BoxConstraints(), // Remove constraints to allow for smaller padding
       ),
       IconButton(
-        icon: Icon(Icons.chevron_right, color: myColor),
+        icon: const Icon(Icons.chevron_right, color: myColor),
         onPressed: onViewDetails,
         padding: EdgeInsets.zero, // Reduce padding to make the layout more compact
-        constraints: BoxConstraints(), // Remove constraints to allow for smaller padding
+        constraints: const BoxConstraints(), // Remove constraints to allow for smaller padding
       ),
     ],
   );

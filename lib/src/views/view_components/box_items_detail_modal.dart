@@ -16,7 +16,7 @@ class BoxItemDetailsModal {
       builder: (BuildContext context) {
         return Container(
           padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).viewInsets.bottom + 16),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
@@ -25,15 +25,15 @@ class BoxItemDetailsModal {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildModalHandle(),
-              SizedBox(height: 8),
-              Text(item.name, style: Theme.of(context).textTheme.headline6!.copyWith(fontWeight: FontWeight.bold)),
-              SizedBox(height: 10),
+              const SizedBox(height: 8),
+              Text(item.name, style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 10),
               if (item.barcode != null) _buildBarcodeRow(context),
               _buildDetailRow('Count:', item.count.toStringAsFixed(1)),
               _buildDetailRow('Total Weight:', '${(item.count * item.basicWeight).toStringAsFixed(2)} kg'),
               if (item.manufacturer != null) _buildDetailRow('Manufacturer:', item.manufacturer!),
               _buildTypesColumn(context),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         );
@@ -46,7 +46,7 @@ class BoxItemDetailsModal {
       child: Container(
         width: 40,
         height: 5,
-        margin: EdgeInsets.symmetric(vertical: 10),
+        margin: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: Colors.grey[300],
           borderRadius: BorderRadius.circular(10),
@@ -59,7 +59,7 @@ class BoxItemDetailsModal {
     return Row(
       children: [
         Icon(Icons.qr_code, color: Theme.of(context).primaryColor),
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         Expanded(child: Text(item.barcode!)),
       ],
     );
@@ -70,7 +70,7 @@ class BoxItemDetailsModal {
       padding: const EdgeInsets.only(top: 4),
       child: Row(
         children: [
-          Text('$label ', style: TextStyle(fontWeight: FontWeight.bold)),
+          Text('$label ', style: const TextStyle(fontWeight: FontWeight.bold)),
           Expanded(child: Text(value)),
         ],
       ),
@@ -78,13 +78,12 @@ class BoxItemDetailsModal {
   }
 
 Widget _buildTypesColumn(BuildContext context) {
-  ThemeData theme = Theme.of(context);
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 8),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Divider(),
+        const Divider(),
         _buildTypeInfo(context, Icon(MdiIcons.dog), 'For Whom:', item.forWhom ?? 'N/A'),
         _buildTypeInfo(context, Icon(MdiIcons.sort), 'Supply Type:', item.supplyType ?? 'N/A'),
         _buildTypeInfo(context, Icon(MdiIcons.nutrition), 'Food Type:', item.foodType ?? 'N/A'),
@@ -101,13 +100,13 @@ Widget _buildTypeInfo(BuildContext context, Icon icon, String title, String info
     child: Row(
       children: [
         icon,
-        SizedBox(width: 8),
+        const SizedBox(width: 8),
         Expanded(
           child: RichText(
             text: TextSpan(
-              style: TextStyle(fontSize: 14, color: theme.textTheme.bodyText1!.color),
+              style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge!.color),
               children: [
-                TextSpan(text: '$title ', style: TextStyle(fontWeight: FontWeight.bold)),
+                TextSpan(text: '$title ', style: const TextStyle(fontWeight: FontWeight.bold)),
                 TextSpan(text: info, style: TextStyle(color: Colors.grey[600])),
               ],
             ),

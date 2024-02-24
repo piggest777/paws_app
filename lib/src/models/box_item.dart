@@ -81,4 +81,21 @@ class BoxItem {
       packaging: supply.packaging,
     );
   }
+
+    factory BoxItem.fromPetCareSupplyWithCustomWeight(PetCareSupply supply, String boxId, double count, double customWeight) {
+    return BoxItem(
+      id: FirebaseFirestore.instance.collection('boxItems').doc().id, // Generate a unique ID for the BoxItem
+      name: supply.name,
+      count: count,
+      basicWeight: customWeight,
+      boxId: boxId,
+      barcode: supply.barcode,
+      keywords: supply.keywords,
+      manufacturer: supply.manufacturer,
+      forWhom: supply.forWhom,
+      supplyType: supply.supplyType,
+      foodType: supply.foodType,
+      packaging: supply.packaging,
+    );
+  }
 }

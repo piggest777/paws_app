@@ -10,6 +10,7 @@ class PetCareSupply {
   final String? supplyType; // Type of supply (e.g., food, medical)
   final String? foodType; // Specific for food items (wet, dry)
   final String? packaging; // Packaging form
+  final bool isGeneric;
 
   PetCareSupply({
     required this.id,
@@ -23,6 +24,7 @@ class PetCareSupply {
     this.supplyType,
     this.foodType,
     this.packaging,
+    this.isGeneric = false,
   });
 
   factory PetCareSupply.fromMap(Map<String, dynamic> map, String id) {
@@ -38,6 +40,7 @@ class PetCareSupply {
       supplyType: map['supplyType'], 
       foodType: map['foodType'], // This can be null for non-food items
       packaging: map['packaging'], 
+      isGeneric: map['isGeneric'] ?? false,
     );
   }
 
@@ -53,6 +56,7 @@ class PetCareSupply {
       'supplyType': supplyType,
       'foodType': foodType, 
       'packaging': packaging,
+      'isGeneric': isGeneric,
     };
   }
 }

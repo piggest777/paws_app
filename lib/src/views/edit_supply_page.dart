@@ -32,6 +32,7 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
   String? selectedSupplyType;
   String? selectedFoodType;
   String? selectedPackaging;
+  bool isGeneric = false;
 
   @override
   void initState() {
@@ -40,7 +41,8 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
     nameController = TextEditingController(text: widget.supplyItem.name);
     barcodeController = TextEditingController(text: widget.supplyItem.barcode ?? '');
     manufacturerController = TextEditingController(text: widget.supplyItem.manufacturer ?? '');
-    weightController = TextEditingController(text: widget.supplyItem.weight.toString());
+    weightController = TextEditingController(text: isGeneric ? '' : widget.supplyItem.weight.toString());
+    isGeneric = widget.supplyItem.isGeneric;
 
     forWhomCustomController = TextEditingController();
     supplyTypeCustomController = TextEditingController();
@@ -55,6 +57,10 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
 
   void _updateSupplyItem() async {
     // Ensure you add a validation check here similar to AddSupplyPage
+    if (isGeneric) {
+      weightController.text = "0.0"; // Make sure to adjust this based on your model
+    }
+    
     PetCareSupply updatedItem = PetCareSupply(
       id: widget.supplyItem.id,
       name: nameController.text,
@@ -68,6 +74,7 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
       foodType: selectedFoodType,
       packaging: selectedPackaging,
     );
+    
 
     await _firebaseService.updateSupplyItemTypeInFirebase(updatedItem.id, updatedItem.toMap());
     Navigator.of(context).pop(updatedItem); // Indicate success
@@ -107,11 +114,18 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
               controller: weightController,
               decoration: const InputDecoration(labelText: 'Weight (kg)'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              enabled: !isGeneric,
               inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}'))],
             ),
             const SizedBox(height: 16),
               buildDropdown(
-                items: ['Dogs', 'Puppies', 'Cats', 'Rodents', 'Common'],
+                items: [
+                  'Dogs',
+                  'Puppies',
+                  'Cats',
+                  'Rodents',
+                  'Birds',
+                  'Common'],
                 selectedValue: selectedForWhom,
                 onChanged: (value) => setState(() => selectedForWhom = value),
                 onAddItem: (newItem) => {/* Handle addition */},
@@ -121,10 +135,16 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
               buildDropdown(
                 items: [
                   'Food',
+                  'Snacks',
                   'Medical',
                   'Clothes',
                   'Toys',
                   'Leashes',
+                  'Collars',
+                  'Underlay',
+                  'Pet home',
+                  'Care products',
+                  'Pet carrier'
                   'Cages',
                   'Common'
                 ],
@@ -142,7 +162,10 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
               ),
               const SizedBox(height: 16),
               buildDropdown(
-                items: ['Wet', 'Dry'],
+                items: [
+                  'Wet',
+                  'Dry'
+                  ],
                 selectedValue: selectedFoodType,
                 onChanged: (value) => setState(() => selectedFoodType = value),
                 onAddItem: (newItem) => {/* Handle addition */},
@@ -151,7 +174,11 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
               ),
               const SizedBox(height: 16),
               buildDropdown(
-                items: ['Bags', 'Tins', 'Jars', 'Boxes', 'None'],
+                items: [
+                  'Bags',
+                  'Jars',
+                  'Item',
+                  ],
                 selectedValue: selectedPackaging,
                 onChanged: (value) {
                   setState(() => selectedPackaging = value);
@@ -159,6 +186,18 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
                 onAddItem: (newItem) => {/* Handle addition */},
                 hint: 'Select or add a package type',
               ),
+              SwitchListTile(
+              title: const Text("Is Generic"),
+              value: isGeneric,
+              onChanged: (bool value) {
+                setState(() {
+                  isGeneric = value;
+                  if (isGeneric) {
+                    weightController.text = ''; // Clear weight if generic
+                  }
+                });
+              },
+            ),
           ],
         ),
       ),
@@ -179,7 +218,7 @@ Widget buildDropdown({
   }
 
   if (isFoodType && selectedSupplyType != 'Food') {
-    return SizedBox.shrink(); // Don't show the dropdown if 'Food' isn't selected
+    return const SizedBox.shrink(); // Don't show the dropdown if 'Food' isn't selected
   }
 
   return ChangeNotifierProvider<DropdownItemsProvider<String>>(

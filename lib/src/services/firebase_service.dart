@@ -32,10 +32,25 @@ class FirebaseService {
         .orderBy('manufacturer')
         .get();
     return querySnapshot.docs
-        .map((doc) => PetCareSupply.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .map((doc) => PetCareSupply.fromMap(doc.data(), doc.id))
         .toList();
   } catch (error) {
     print('Error fetching supplies by keyword: $error');
+    rethrow;
+  }
+}
+
+  Future<List<PetCareSupply>> fetchGenericSupplies() async {
+  try {
+    var querySnapshot = await _firestore
+        .collection('petSupplyType')
+        .where('isGeneric', isEqualTo: true)
+        .get();
+    return querySnapshot.docs
+        .map((doc) => PetCareSupply.fromMap(doc.data(), doc.id))
+        .toList();
+  } catch (error) {
+    print('Error fetching generic supplies: $error');
     rethrow;
   }
 }

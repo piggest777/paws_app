@@ -91,10 +91,10 @@ class PawsApp extends StatelessWidget {
             hoverColor:
                 myColor // sets the background color of the FloatingActionButton
             ),
-                    iconTheme: IconThemeData(
+                    iconTheme: const IconThemeData(
           color: Colors.black, // Default icon color
         ),
-        primaryIconTheme: IconThemeData(
+        primaryIconTheme: const IconThemeData(
           color: Colors.black, // Primary icon color, used in AppBar etc.
         ),
       ),

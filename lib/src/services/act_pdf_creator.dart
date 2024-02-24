@@ -1,25 +1,28 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:paws_app/src/models/act_item.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:universal_html/html.dart' as html;
 
 class ActPdfCreator {
   static Future<File> createBoxItemsPdf({
-    required String year,
+
     required String organizationName,
     required String organizationNumber,
-    required String code,
-    required String date,
-    required String humanitarianCode,
     required String recipientName,
+    required String? recipientNumber,
     required String postNumber,
     required String address,
     required String phoneNumber,
     required List<ActItem> items,
-    // Additional parameters for table data can be added here
   }) async {
+
+    final totalPackages = items.fold<double>(0, (sum, item) => sum + item.quantity);
+    final totalWeight = items.fold<double>(0, (sum, item) => sum + item.nettoWeight);
+
     final fontData = await rootBundle.load('assets/fonts/Times New Roman.ttf');
     final ttf = pw.Font.ttf(fontData);
 
@@ -28,12 +31,12 @@ class ActPdfCreator {
     final ttfBold = pw.Font.ttf(fontBoldData);
 
     final theme = pw.ThemeData.withFont(
-      base: ttf, // Set Roboto as the base font for normal text
+      base: ttf, 
       bold:
-          ttfBold, // Optionally, set Roboto as bold if you have a separate bold font file
+          ttfBold,
       italic:
-          ttf, // Optionally, set Roboto as italic if you have a separate italic font file
-      boldItalic: ttf, // Optionally, set for boldItalic
+          ttf, 
+      boldItalic: ttf, 
     );
 
     final pdf = pw.Document(theme: theme);
@@ -41,10 +44,11 @@ class ActPdfCreator {
     // Example content; customize with your actual data
     pdf.addPage(
       pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
         build: (context) => [
           pw.Center(
             child: pw.Text(
-              'АКТ приймання - передачі благодійної допомоги від $year',
+              'АКТ приймання - передачі благодійної допомоги від _____________',
               style: pw.TextStyle(
                 fontWeight: pw.FontWeight.bold,
                 fontSize: 12, // Optional: Adjust the font size as needed
@@ -65,10 +69,10 @@ class ActPdfCreator {
                     pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
               ),
               pw.RichText(
-                text: pw.TextSpan(
+                text: const pw.TextSpan(
                   style: pw.TextStyle(fontSize: 10),
                   text:
-                      'Підстава для видачі благодійної допомоги: таможенна декларація та код вантажу № $code від $date код гум.допомоги в автоматизованій системі - $humanitarianCode',
+                      'Підстава для видачі благодійної допомоги: таможенна декларація та код вантажу № _______ від ___________ код гум.допомоги в автоматизованій системі - __________________',
                 ),
               ),
               pw.SizedBox(height: 20),
@@ -84,7 +88,16 @@ class ActPdfCreator {
                   pw.Text('Отримувач: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(recipientName, style: pw.TextStyle(fontSize: 12)),
+                  pw.Text(recipientName, style: const pw.TextStyle(fontSize: 12)),
+                ],
+              ),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.start,
+                children: [
+                  pw.Text('ЄДРПОУ / ІПН: ',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 12)),
+                  pw.Text(recipientNumber ?? '________________', style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               // Assuming there is a specific value for ЄДРПОУ / ІПН, you would include it here as well
@@ -94,7 +107,7 @@ class ActPdfCreator {
                   pw.Text('Доставка: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(recipientName, style: pw.TextStyle(fontSize: 12)),
+                  pw.Text(recipientName, style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               pw.Row(
@@ -103,7 +116,7 @@ class ActPdfCreator {
                   pw.Text('Відділення: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(postNumber, style: pw.TextStyle(fontSize: 12)),
+                  pw.Text(postNumber, style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               pw.Row(
@@ -112,7 +125,7 @@ class ActPdfCreator {
                   pw.Text('Адреса: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(address, style: pw.TextStyle(fontSize: 12)),
+                  pw.Text(address, style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               pw.Row(
@@ -121,7 +134,7 @@ class ActPdfCreator {
                   pw.Text('Телефон: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(phoneNumber, style: pw.TextStyle(fontSize: 12)),
+                  pw.Text(phoneNumber, style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
             ],
@@ -131,19 +144,19 @@ class ActPdfCreator {
           _createProductTable(items, context),
           pw.SizedBox(height: 10),
           pw.Paragraph(
-              text: 'Всього: 1 пакунок вагою 25,7 кг',
-              style: pw.TextStyle(fontSize: 12)),
+              text: 'Всього: $totalPackages пакунок вагою $totalWeight кг',
+              style: const pw.TextStyle(fontSize: 12)),
           pw.Paragraph(
               text:
                   'Усі претензії щодо кількості і якості товару розглядаються виключно під час прийому товару. '
                   'Благодійна допомога сформована виключно з допомоги, яка отримана в якості пожертвування від жертводавців та донорів в місті Стокгольм, Швеція. '
                   'Допомога може включати відкриті упаковки, використані речі. Відповідальність за використання несе отримувач.',
-              style: pw.TextStyle(fontSize: 10)),
+              style: const pw.TextStyle(fontSize: 10)),
           pw.SizedBox(height: 20),
           pw.Paragraph(
             text:
                 'Передав _______________ 	                Отримав _______________',
-            style: pw.TextStyle(fontSize: 12),
+            style: const pw.TextStyle(fontSize: 12),
           ),
           pw.SizedBox(height: 20),
           pw.Paragraph(
@@ -152,17 +165,33 @@ class ActPdfCreator {
                 'а також на обробку і використання матеріалів вищезгаданих засобів спостереження благодійником $organizationName та Бенефіціаром, що здійснює відповідну діяльність що до фіксації, збору, обробки, використання отриманих матеріалів з метою підтверження отримання благодійної допомоги та її цільового використання. '
                 'Отримувач поінформований про заборону продажу цієї допомоги, та про наслідки Адміністративного та кримінального покарання за продаж цієї допомоги згідно нової редакції Кримінального кодексу України від 03.03.2022. '
                 'Отримувач поінформований про заборону розповсюдження цієї допомоги в межах території станом на 23.02.2022 зони ОРДЛО та АР Крим.',
-            style: pw.TextStyle(fontSize: 10),
+            style: const pw.TextStyle(fontSize: 10),
           ),
         ],
       ),
     );
 
-    // Save the PDF file and return its path
-    final output = await getTemporaryDirectory();
-    final file = File("${output.path}/Act_$year.pdf");
-    await file.writeAsBytes(await pdf.save());
-    return file;
+
+
+    final pdfData = await pdf.save();
+
+    if (kIsWeb) {
+      // Running on the web
+      final blob = html.Blob([pdfData], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute("download", "$recipientName.pdf")
+      ..click();
+    html.Url.revokeObjectUrl(url);
+      return File('');
+    } else {
+      // Running on mobile (Android or iOS)
+      final output = await getTemporaryDirectory();
+      final file = File(
+          "${output.path}/$recipientName.pdf");
+      await file.writeAsBytes(pdfData);
+     return file;
+    }
   }
 
   static pw.Widget _createProductTable(
@@ -171,26 +200,26 @@ class ActPdfCreator {
         items.fold<double>(0, (sum, item) => sum + item.nettoWeight);
 
     return pw.Table(border: pw.TableBorder.all(), columnWidths: {
-      0: pw.FlexColumnWidth(10), // Auto width
-      1: pw.FlexColumnWidth(90), // Custom width for description
-      2: pw.FixedColumnWidth(50), // Fixed width for units
-      3: pw.FixedColumnWidth(50), // Fixed width for packing
-      4: pw.FixedColumnWidth(40), // Fixed width for quantity
-      5: pw.FixedColumnWidth(70), // Fixed width for netto weight
+      0: const pw.FlexColumnWidth(10), // Auto width
+      1: const pw.FlexColumnWidth(90), // Custom width for description
+      2: const pw.FixedColumnWidth(50), // Fixed width for units
+      3: const pw.FixedColumnWidth(50), // Fixed width for packing
+      4: const pw.FixedColumnWidth(45), // Fixed width for quantity
+      5: const pw.FixedColumnWidth(70), // Fixed width for netto weight
     }, children: [
       pw.TableRow(
-          decoration: pw.BoxDecoration(color: PdfColors.grey300),
+          decoration: const pw.BoxDecoration(color: PdfColors.grey300),
           children: [
             _buildCell('№', context, alignment: pw.Alignment.center),
-            _buildCell('Товар/Product description', context,
-                alignment: pw.Alignment.centerLeft),
-            _buildCell('Одиниці/Units', context,
+            _buildCell('Товар/\nProduct description', context,
+                alignment: pw.Alignment.centerLeft,),
+            _buildCell('Одиниці/\nUnits', context,
                 alignment: pw.Alignment.center),
-            _buildCell('Упаковка/Packing', context,
+            _buildCell('Упаковка/\nPacking', context,
                 alignment: pw.Alignment.center),
-            _buildCell('Кількість/Quantity', context,
+            _buildCell('Кількість/\nQuantity', context,
                 alignment: pw.Alignment.center),
-            _buildCell('Загальна вага/Total Netto weight', context,
+            _buildCell('Загальна вага/\nTotal Netto weight', context,
                 alignment: pw.Alignment.centerRight),
           ]),
       ...items.map((item) => pw.TableRow(
@@ -223,11 +252,11 @@ class ActPdfCreator {
   static pw.Widget _buildCell(String text, pw.Context context,
       {pw.Alignment alignment = pw.Alignment.center, bool isBold = false}) {
     return pw.Container(
-      padding: pw.EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 2, vertical: 4),
       alignment: alignment,
       child: pw.Text(text,
           style: pw.TextStyle(
-              fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+              fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal, fontSize: 9)),
     );
   }
 }

@@ -192,8 +192,25 @@ class _RequestsPageState extends State<RequestsPage> {
       groupedRequests[date]!['createdCount'] += createdCountForRequest;
     }
 
-    return groupedRequests;
+    return _sortGroupedRequestsByDate(groupedRequests);
   }
+
+  Map<String, Map<String, dynamic>> _sortGroupedRequestsByDate(
+    Map<String, Map<String, dynamic>> groupedRequests) {
+  // Convert date strings back to DateTime objects for comparison
+  DateFormat dateFormat = DateFormat('MMM d yyyy'); // Adjust format to match your date strings
+
+  // Sort the keys (dates) based on the DateTime comparison
+  var sortedKeys = groupedRequests.keys.toList()
+    ..sort((a, b) => dateFormat.parse(b).compareTo(dateFormat.parse(a)));
+
+  // Create a new map with sorted keys
+  Map<String, Map<String, dynamic>> sortedGroupedRequests = {
+    for (var key in sortedKeys) key: groupedRequests[key]!
+  };
+
+  return sortedGroupedRequests;
+}
 
   String _formatDateReadable(Timestamp? timestamp) {
     if (timestamp == null) return 'Unknown Date';

@@ -10,7 +10,7 @@ import 'package:paws_app/src/views/view_components/boxitem_list_item.dart';
 class AddItemsToBoxPage extends StatefulWidget {
   final String boxId;
 
-  const AddItemsToBoxPage({Key? key, required this.boxId}) : super(key: key);
+  const AddItemsToBoxPage({super.key, required this.boxId});
 
   @override
   _AddItemsToBoxPageState createState() => _AddItemsToBoxPageState();
@@ -21,6 +21,12 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
   TextEditingController searchController = TextEditingController();
 
   String lastScannedData = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchGenericSupplies(); // Fetch generic supplies initially
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +48,7 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
           Expanded(
             child: Center(
               child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 600),
+                constraints: const BoxConstraints(maxWidth: 600),
                 child: ListView.builder(
                   itemCount: filteredSupplies.length,
                   itemBuilder: (BuildContext context, int index) {
@@ -72,16 +78,72 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
     );
   }
 
-  void _filterSupplies(String keyword) {
+  void _filterSupplies(String keyword) async {
+    if (keyword.isEmpty) {
+      // If search is cleared, fetch generic supplies again
+      _fetchGenericSupplies();
+      return;
+    }
+
+    // Use existing logic to filter supplies based on the keyword
     final service = FirebaseService();
-    service.fetchSuppliesByKeyword(keyword).then((supplies) {
+    try {
+      final supplies = await service.fetchSuppliesByKeyword(keyword);
       setState(() {
         filteredSupplies = supplies;
       });
-    }).catchError((error) {
+    } catch (error) {
       print('Error filtering supplies: $error');
-    });
+    }
   }
+
+    void _fetchGenericSupplies() async {
+    final service = FirebaseService();
+    try {
+      final genericSupplies = await service.fetchGenericSupplies();
+      setState(() {
+        filteredSupplies = genericSupplies;
+      });
+    } catch (error) {
+      print('Error fetching generic supplies: $error');
+    }
+  }
+
+  Future<double?> _requestCustomWeight() async {
+  double? customWeight;
+  await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Enter Custom Weight'),
+          content: TextField(
+            autofocus: true,
+            decoration: const InputDecoration(hintText: 'Weight (kg)'),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (value) {
+              String input = value.replaceAll(',', '.');
+              customWeight = double.tryParse(input);
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop(customWeight);
+              },
+            ),
+          ],
+        );
+      });
+  return customWeight;
+}
+
 
   Widget _buildSearchBar() {
     return Padding(
@@ -89,11 +151,7 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
       child: TextField(
         controller: searchController,
         onChanged: (value) {
-          if (value.length >= 2) {
-            _filterSupplies(value);
-          } else {
-            setState(() => filteredSupplies.clear());
-          }
+          _filterSupplies(value);
         },
         decoration: InputDecoration(
           hintText: 'Search by name or keyword',
@@ -103,7 +161,7 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     searchController.clear();
-                    setState(() => filteredSupplies.clear());
+                    _fetchGenericSupplies(); // Fetch generic supplies again when search is cleared
                   },
                 )
               : null,
@@ -139,21 +197,41 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
     }
   }
 
-void _addItemToBoxAndDecrementCount(PetCareSupply supply, double quantityToAdd) {
-  if (quantityToAdd <= 0 || quantityToAdd > supply.count) {
+void _addItemToBoxAndDecrementCount(PetCareSupply supply, double quantityToAdd) async {
+  // If the item is not generic, check the quantity
+  if (!supply.isGeneric && (quantityToAdd <= 0 || quantityToAdd > supply.count)) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Invalid quantity.')),
+      const SnackBar(content: Text('Invalid quantity.')),
     );
     return;
   }
 
-  // Create BoxItem instance
-  BoxItem boxItem = BoxItem.fromPetCareSupply(supply, widget.boxId, quantityToAdd);
+  // Check if the supply item is generic
+  if (supply.isGeneric) {
+    // Request custom weight from the user
+    final double? customWeight = await _requestCustomWeight();
+    if (customWeight == null || customWeight <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid weight entered.')),
+      );
+      return;
+    }
 
-  // Assuming FirebaseService has a method like addItemToBoxAndDecrementCount
-  FirebaseService().addItemToBoxAndDecrementCount(boxItem, supply.id, quantityToAdd).then((_) {
+    // Adjust the box item with the custom weight
+    BoxItem boxItem = BoxItem.fromPetCareSupplyWithCustomWeight(supply, widget.boxId, quantityToAdd, customWeight);
+    _addBoxItemWithCustomWeight(boxItem, supply.id, quantityToAdd);
+  } else {
+    // If not generic, proceed as normal
+    BoxItem boxItem = BoxItem.fromPetCareSupply(supply, widget.boxId, quantityToAdd);
+    _addBoxItem(boxItem, supply.id, quantityToAdd);
+  }
+}
+
+void _addBoxItemWithCustomWeight(BoxItem boxItem, String supplyId, double quantityToAdd) {
+  // Use this function to add the box item with a custom weight
+  FirebaseService().addItemToBoxAndDecrementCount(boxItem, supplyId, quantityToAdd).then((_) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${supply.name} added to box and count updated successfully')),
+      SnackBar(content: Text('${boxItem.name} added to box with custom weight successfully')),
     );
   }).catchError((error) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -162,6 +240,17 @@ void _addItemToBoxAndDecrementCount(PetCareSupply supply, double quantityToAdd) 
   });
 }
 
+void _addBoxItem(BoxItem boxItem, String supplyId, double quantityToAdd) {
+  FirebaseService().addItemToBoxAndDecrementCount(boxItem, supplyId, quantityToAdd).then((_) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${boxItem.name} added to box and count updated successfully')),
+    );
+  }).catchError((error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: $error')),
+    );
+  });
+}
 
   void scanBarcode() async {
     final scannedData = await Navigator.of(context).push(

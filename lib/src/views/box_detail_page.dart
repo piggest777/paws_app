@@ -153,11 +153,12 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
             icon: const Icon(Icons.add_box),
             onPressed: () {
 
-              if (boxId != null) 
-              Navigator.of(context).push(
+              if (boxId != null) {
+                Navigator.of(context).push(
                 MaterialPageRoute(
-                    builder: (context) => BoxItemsPage(boxId: boxId!)),
+                    builder: (context) => BoxItemsPage(boxId: boxId!, request: request, person: person,)),
               );
+              }
             },
           ), // Place the delete button in the AppBar
         ],
@@ -218,10 +219,12 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                   Center(
                     child: Column(
                       children: [
+                        const SizedBox(height: 10,),
                         ElevatedButton(
                           onPressed: _createAndSharePdf,
                           child: const Text('Create and Share PDF'),
                         ),
+                        const SizedBox(height: 10,),
                         if (boxId != null)
                           ElevatedButton(
                             onPressed: () => _navigateToRequestDetails(context),
@@ -236,7 +239,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                             onPressed: () {
                               _showDeleteConfirmationDialog();
                             },
-                            child: Text('Delete Box'),
+                            child: const Text('Delete Box'),
                           ),
                         ),
                       ],

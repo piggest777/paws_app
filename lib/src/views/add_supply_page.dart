@@ -21,6 +21,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
   String? selectedSupplyType;
   String? selectedFoodType;
   String? selectedPackaging;
+  bool isGeneric = false;
 
   final FirebaseService _firebaseService = FirebaseService();
 
@@ -104,7 +105,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
 
     final weightValue = parseDouble(weight);
 
-    if (weightValue == null || weightValue <= 0) {
+    if (weightValue == null || weightValue < 0) {
       // Show an error message for invalid or non-positive weight
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -184,7 +185,8 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
                     forWhom: selectedForWhom,
                     supplyType: selectedSupplyType,
                     foodType: selectedFoodType,
-                    packaging: selectedPackaging);
+                    packaging: selectedPackaging,
+                    isGeneric: isGeneric);
 
                 try {
                   // Save the new supply item to Firebase
@@ -248,7 +250,13 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
               ),
               const SizedBox(height: 16),
               buildDropdown(
-                items: ['Dogs', 'Puppies', 'Cats', 'Rodents', 'Common'],
+                items: [
+                  'Dogs',
+                  'Puppies',
+                  'Cats',
+                  'Rodents',
+                  'Birds',
+                  'Common'],
                 selectedValue: selectedForWhom,
                 onChanged: (value) => setState(() => selectedForWhom = value),
                 onAddItem: (newItem) => {/* Handle addition */},
@@ -258,10 +266,16 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
               buildDropdown(
                 items: [
                   'Food',
+                  'Snacks',
                   'Medical',
                   'Clothes',
                   'Toys',
                   'Leashes',
+                  'Collars',
+                  'Underlay',
+                  'Pet home',
+                  'Care products',
+                  'Pet carrier'
                   'Cages',
                   'Common'
                 ],
@@ -279,7 +293,10 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
               ),
               const SizedBox(height: 16),
               buildDropdown(
-                items: ['Wet', 'Dry'],
+                items: [
+                  'Wet',
+                  'Dry'
+                  ],
                 selectedValue: selectedFoodType,
                 onChanged: (value) => setState(() => selectedFoodType = value),
                 onAddItem: (newItem) => {/* Handle addition */},
@@ -287,7 +304,11 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
                 isFoodType: true, // This dropdown is conditionally displayed
               ),
               buildDropdown(
-                items: ['Bags', 'Tins', 'Jars', 'Boxes', 'None'],
+                items: [
+                  'Bags',
+                  'Jars',
+                  'Item',
+                  ],
                 selectedValue: selectedPackaging,
                 onChanged: (value) {
                   setState(() => selectedPackaging = value);
@@ -311,7 +332,8 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
                 ),
                 controller: weightController,
                 keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true), // Decimal keypad
+                    decimal: true),
+                    enabled: !isGeneric, // Decimal keypad
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
                     // Check if the weight can be parsed as a double and is positive
@@ -330,6 +352,19 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
                   return null;
                 },
               ),
+              SwitchListTile(
+              title: const Text('Is this a generic item?'),
+              value: isGeneric,
+              onChanged: (bool value) {
+                setState(() {
+                  isGeneric = value;
+                  if (isGeneric) {
+                    // If item is marked as generic, weight can be set to zero
+                    weightController.text = '0'; 
+                  }
+                });
+              },
+            ),
             ],
           ),
         ),
@@ -353,7 +388,7 @@ Widget buildDropdown({
   bool isFoodType = false,
 }) {
   if (isFoodType && selectedSupplyType != 'Food') {
-    return SizedBox.shrink(); // Conditional display logic
+    return const SizedBox.shrink(); // Conditional display logic
   }
 
   return ChangeNotifierProvider<DropdownItemsProvider<String>>(

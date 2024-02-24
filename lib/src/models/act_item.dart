@@ -3,7 +3,7 @@ class ActItem {
   final String description;
   final String units;
   final String packing;
-  final int quantity;
+  final double quantity;
   final double nettoWeight;
 
   ActItem({

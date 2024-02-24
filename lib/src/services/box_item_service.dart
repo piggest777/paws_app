@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:paws_app/src/models/box_item.dart'; // Ensure this path matches your project structure
+import 'package:paws_app/src/models/act_item.dart';
+import 'package:paws_app/src/models/box_item.dart';
+import 'package:paws_app/src/services/act_item_converter.dart'; // Ensure this path matches your project structure
 
 class BoxItemService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -12,7 +14,7 @@ class BoxItemService {
                                     .where('boxId', isEqualTo: boxId)
                                     .get();
       return querySnapshot.docs
-                          .map((doc) => BoxItem.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+                          .map((doc) => BoxItem.fromMap(doc.data(), doc.id))
                           .toList();
     } catch (e) {
       // Handle or throw the error as needed
@@ -26,9 +28,31 @@ class BoxItemService {
       .where('boxId', isEqualTo: boxId)
       .snapshots()
       .map((snapshot) => snapshot.docs
-        .map((doc) => BoxItem.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .map((doc) => BoxItem.fromMap(doc.data(), doc.id))
         .toList());
   }
+
+  Future<List<ActItem>> getActItems(String boxId) async {
+  List<ActItem> actItems = [];
+  int counter = 1;
+
+  try {
+    // Assuming you're using Firestore and have a collection named 'boxItems'
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('boxItems')
+        .where('boxId', isEqualTo: boxId)
+        .get();
+
+    for (var doc in querySnapshot.docs) {
+      BoxItem item = BoxItem.fromMap(doc.data(), doc.id);
+      actItems.add(ActItemConverter.convertToActItem(item, counter++));
+    }
+  } catch (e) {
+    print("Error fetching items: $e");
+  }
+
+  return actItems;
+}
 
   // Add a new box item
   Future<void> addBoxItem(BoxItem boxItem) async {

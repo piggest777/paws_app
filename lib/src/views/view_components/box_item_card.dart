@@ -6,10 +6,10 @@ class BoxItemCard extends StatelessWidget {
   final VoidCallback onViewDetails;
 
   const BoxItemCard({
-    Key? key,
+    super.key,
     required this.item,
     required this.onViewDetails,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +41,7 @@ class BoxItemCard extends StatelessWidget {
                       children: [
                         Icon(Icons.qr_code, color: Theme.of(context).primaryColor, size: 20),
                         const SizedBox(width: 4),
-                        Text(item.barcode!, style: TextStyle(fontSize: 14)),
+                        Text(item.barcode!, style: const TextStyle(fontSize: 14)),
                       ],
                     ),
                   // Display manufacturer or "N/A" if not present
@@ -55,7 +55,7 @@ class BoxItemCard extends StatelessWidget {
                   // Now showing total weight on the left, swapped with the manufacturer
                   Text('Total: ${totalWeight.toStringAsFixed(2)} kg'),
                   // Display count and basic weight
-                  Text('${item.count.toStringAsFixed(0)} x ${item.basicWeight.toStringAsFixed(2)} kg', style: TextStyle(fontSize: 14)),
+                  Text('${item.count.toStringAsFixed(0)} x ${item.basicWeight.toStringAsFixed(2)} kg', style: const TextStyle(fontSize: 14)),
                 ],
               ),
             ],

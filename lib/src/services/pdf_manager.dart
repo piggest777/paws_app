@@ -19,107 +19,152 @@ class PDFManager {
   final Request? request;
   final Person? person;
 
-
   PDFManager({this.box, this.request, this.person});
 
-Future<void> createAndSharePdf() async {
-  final pdf = pw.Document();
+  Future<void> createAndSharePdf() async {
+    // final pdf = pw.Document();
 
-  // Load assets
-  const logoAsset = 'assets/pop_logo.png'; // Path to your logo asset
-  final qrData = box?.id ?? 'Unknown'; // Data for the QR code
-  final image = await _loadImage(logoAsset); // Load the logo image
-  final qrImage = await generateQRCodeImage(qrData); // Generate QR code image
-  final imageBytes = await convertImageToBytes(qrImage);
-  final qrPdfImage = pw.MemoryImage(imageBytes);
+    // Load assets
+    const logoAsset = 'assets/pop_logo.png'; // Path to your logo asset
+    final qrData = box?.id ?? 'Unknown'; // Data for the QR code
+    final image = await _loadImage(logoAsset); // Load the logo image
+    final qrImage = await generateQRCodeImage(qrData); // Generate QR code image
+    final imageBytes = await convertImageToBytes(qrImage);
+    final qrPdfImage = pw.MemoryImage(imageBytes);
 
-  // Load custom font
-  final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
-  final ttf = pw.Font.ttf(fontData);
+    // Load custom font
+    // final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    // final ttf = pw.Font.ttf(fontData);
 
-  String boxId = box?.boxID.toString() ?? '';
-  String createdDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    String boxId = box?.boxID.toString() ?? '';
+    String createdDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-  // Create PDF page
-  pdf.addPage(
-    pw.Page(
-      build: (pw.Context context) {
-        return pw.Stack(
-          children: [
-            pw.Center(
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.center,
-                children: [
-              if (image != null)
-                pw.Container(
-                  margin: const pw.EdgeInsets.all(10),
-                  child: pw.Image(image, width: 200, height: 200),
+
+    final fontData = await rootBundle.load('assets/fonts/Times New Roman.ttf');
+    final ttf = pw.Font.ttf(fontData);
+
+    final fontBoldData =
+        await rootBundle.load('assets/fonts/Times New Roman Bold.ttf');
+    final ttfBold = pw.Font.ttf(fontBoldData);
+
+    final theme = pw.ThemeData.withFont(
+      base: ttf, // Set Roboto as the base font for normal text
+      bold:
+          ttfBold, // Optionally, set Roboto as bold if you have a separate bold font file
+      italic:
+          ttf, // Optionally, set Roboto as italic if you have a separate italic font file
+      boldItalic: ttf, // Optionally, set for boldItalic
+    );
+
+    final pdf = pw.Document(theme: theme);
+    // Create PDF page
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Stack(
+            children: [
+              pw.Center(
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.center,
+                  children: [
+                    if (image != null)
+                      pw.Container(
+                        margin: const pw.EdgeInsets.all(10),
+                        child: pw.Image(image, width: 200, height: 200),
+                      ),
+                    pw.SizedBox(height: 20),
+                    pw.Text(
+                      'Humanitarian aid for animal shelters',
+                      style: pw.TextStyle(
+                          font: ttfBold,
+                          fontSize: 20,
+                          fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.SizedBox(height: 10),
+                    pw.Text(
+                      'Гуманітарна допомога для притулків для тварин',
+                      style: pw.TextStyle(
+                          font: ttf,
+                          fontSize: 20,
+                          fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.SizedBox(height: 40),
+                    pw.Text(
+                      'ОТРИМУВАЧ В УКРАЇНІ',
+                      style: pw.TextStyle(
+                          font: ttfBold,
+                          fontSize: 20,
+                          ),
+                    ),
+                    pw.SizedBox(height: 5),
+                    if (request?.organizationName != null &&
+                        request!.organizationName!.isNotEmpty)
+                      pw.Text(
+                        '${request!.organizationName}',
+                        style: pw.TextStyle(
+                            font: ttf,
+                            fontSize: 18,
+                            fontWeight: pw.FontWeight.bold),
+                      ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      '${person?.name ?? ''} ${person?.surname ?? ''}',
+                      style: pw.TextStyle(font: ttf, fontSize: 18),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      '${person?.region ?? ''}, ${person?.city ?? ''}',
+                      style: pw.TextStyle(font: ttf, fontSize: 18),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      person?.novaPostBranch ?? 'N/A',
+                      style: pw.TextStyle(font: ttf, fontSize: 18),
+                    ),
+                    pw.SizedBox(height: 2),
+                    pw.Text(
+                      person?.phone ?? 'N/A',
+                      style: pw.TextStyle(font: ttf, fontSize: 18),
+                    ),
+                    pw.SizedBox(height: 20),
+                    pw.Image(qrPdfImage),
+                    pw.SizedBox(height: 20),
+                    pw.Text(
+                      'ВІДПРАВНИК ПО УКРАЇНІ',
+                      style: pw.TextStyle(
+                          font: ttfBold,
+                          fontSize: 20,
+                          ),
+                    ),
+                    pw.Text(
+                      'ГО “Захист прав тварин “ДОБЕРМАН” Невмержицька Оксана',
+                      style: pw.TextStyle(font: ttf, fontSize: 16),
+                    ),
+                    pw.Text(
+                      'Теплодар,Одеська обл., НП 1, +380974649772',
+                      style: pw.TextStyle(font: ttf, fontSize: 16),
+                    ),
+                  ],
                 ),
-              pw.SizedBox(height: 20),
-              pw.Text(
-                'Humanitarian aid for animal shelters',
-                style: pw.TextStyle(font: ttf, fontSize: 20, fontWeight: pw.FontWeight.bold),
               ),
-              pw.SizedBox(height: 10),
-              pw.Text(
-                'Гуманітарна допомога для притулків для тварин',
-                style: pw.TextStyle(font: ttf, fontSize: 20, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(height: 40),
-              if (request?.organizationName != null && request!.organizationName!.isNotEmpty)
-                pw.Text(
-                  '${request!.organizationName}',
-                  style: pw.TextStyle(font: ttf, fontSize: 18, fontWeight: pw.FontWeight.bold),
-                ),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                '${person?.name ?? ''} ${person?.surname ?? ''}',
-                style: pw.TextStyle(font: ttf, fontSize: 18),
-              ),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                '${person?.region ?? ''}, ${person?.city ?? ''}',
-                style: pw.TextStyle(font: ttf, fontSize: 18),
-              ),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                person?.novaPostBranch ?? 'N/A',
-                style: pw.TextStyle(font: ttf, fontSize: 18),
-              ),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                person?.phone ?? 'N/A',
-                style: pw.TextStyle(font: ttf, fontSize: 18),
-              ),
-              pw.SizedBox(height: 20),
-              pw.Image(qrPdfImage),
-                  pw.SizedBox(height: 20),
-                  pw.Text(
-                    'Box Type: ${box?.type.toString().split('.').last ?? 'Unknown'}',
-                    style: pw.TextStyle(font: ttf, fontSize: 12),
+              pw.Align(
+                alignment: pw.Alignment.bottomRight,
+                child: pw.Padding(
+                  padding: const pw.EdgeInsets.only(right: 10, bottom: 10),
+                  child: pw.Text(
+                    'ID: $boxId | Created: $createdDate',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      font: ttf,
+                    ),
                   ),
-                ],
-              ),
-            ),
-            pw.Align(
-              alignment: pw.Alignment.bottomRight,
-              child: pw.Padding(
-                padding: const pw.EdgeInsets.only(right: 10, bottom: 10),
-                child: pw.Text(
-                  'ID: $boxId | Created: $createdDate',
-                  style: pw.TextStyle(
-                    fontSize: 12,
-                    font: ttf,
-                  ),
                 ),
               ),
-            ),
-          ],
-        );
-      },
-    ),
-  );
-
+            ],
+          );
+        },
+      ),
+    );
 
     final pdfData = await pdf.save();
 
@@ -132,17 +177,18 @@ Future<void> createAndSharePdf() async {
     } else {
       // Running on mobile (Android or iOS)
       final output = await getTemporaryDirectory();
-      final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? '${request!.surname}_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
+      final file = File(
+          "${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? '${request!.surname}_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
       await file.writeAsBytes(pdfData);
       Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
     }
 
-  // Save and share PDF
-  // final output = await getTemporaryDirectory();
-  // final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? request!.surname + '_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
-  // await file.writeAsBytes(await pdf.save());
-  // Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
-}
+    // Save and share PDF
+    // final output = await getTemporaryDirectory();
+    // final file = File("${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? request!.surname + '_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
+    // await file.writeAsBytes(await pdf.save());
+    // Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
+  }
 
   Future<pw.ImageProvider?> _loadImage(String assetPath) async {
     try {

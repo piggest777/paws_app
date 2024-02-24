@@ -9,7 +9,7 @@ import 'package:paws_app/src/views/view_components/counter_widget.dart';
 class SupplyItemDetailsPage extends StatefulWidget {
   PetCareSupply supplyItem;
 
-  SupplyItemDetailsPage({Key? key, required this.supplyItem}) : super(key: key);
+  SupplyItemDetailsPage({super.key, required this.supplyItem});
 
   @override
   State<SupplyItemDetailsPage> createState() => _SupplyItemDetailsPageState();
