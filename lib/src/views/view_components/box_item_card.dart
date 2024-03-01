@@ -16,6 +16,12 @@ class BoxItemCard extends StatelessWidget {
     // Calculate total weight
     double totalWeight = item.count * item.basicWeight;
 
+    String formatNumber(double n) {
+      return n.truncateToDouble() == n
+          ? n.toStringAsFixed(0)
+          : n.toStringAsFixed(2);
+    }
+
     return Card(
       elevation: 4,
       margin: const EdgeInsets.all(8.0),
@@ -28,24 +34,29 @@ class BoxItemCard extends StatelessWidget {
             children: [
               Text(
                 item.name,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (item.barcode != null) // Display barcode icon and text if barcode is present
+                  if (item.barcode !=
+                      null) // Display barcode icon and text if barcode is present
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.qr_code, color: Theme.of(context).primaryColor, size: 20),
+                        Icon(Icons.qr_code,
+                            color: Theme.of(context).primaryColor, size: 20),
                         const SizedBox(width: 4),
-                        Text(item.barcode!, style: const TextStyle(fontSize: 14)),
+                        Text(item.barcode!,
+                            style: const TextStyle(fontSize: 14)),
                       ],
                     ),
                   // Display manufacturer or "N/A" if not present
-                  Text(item.manufacturer ?? 'N/A', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  Text(item.manufacturer ?? 'N/A',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -55,7 +66,10 @@ class BoxItemCard extends StatelessWidget {
                   // Now showing total weight on the left, swapped with the manufacturer
                   Text('Total: ${totalWeight.toStringAsFixed(2)} kg'),
                   // Display count and basic weight
-                  Text('${item.count.toStringAsFixed(0)} x ${item.basicWeight.toStringAsFixed(2)} kg', style: const TextStyle(fontSize: 14)),
+                  Text(
+                    '${formatNumber(item.count)} x ${formatNumber(item.basicWeight)} kg',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ],
               ),
             ],
@@ -65,7 +79,3 @@ class BoxItemCard extends StatelessWidget {
     );
   }
 }
-
-
-
-

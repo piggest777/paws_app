@@ -2,9 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:paws_app/src/services/group_state.dart';
+import 'package:paws_app/src/views/barcode_scanner_page.dart';
 import 'package:paws_app/src/views/box_detail_page.dart';
 import 'package:paws_app/src/views/boxes_page.dart';
-import 'package:paws_app/src/views/qr_scan_page.dart';
 import 'package:paws_app/src/views/search_person_page.dart';
 import 'package:paws_app/src/views/settings_page.dart';
 import 'package:paws_app/src/views/view_components/request_card.dart';
@@ -102,8 +102,9 @@ class _RequestsPageState extends State<RequestsPage> {
                         color: const Color.fromARGB(255, 83, 136, 63),
                         elevation: 2,
                         margin: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 8, vertical: 3),
                         child: ListTile(
+                          contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                           title: RichText(
                             text: TextSpan(
                               children: [
@@ -111,7 +112,7 @@ class _RequestsPageState extends State<RequestsPage> {
                                   text: '$date ', // Display date
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -119,7 +120,7 @@ class _RequestsPageState extends State<RequestsPage> {
                                   child: Padding(
                                    padding: EdgeInsets.only(left: 8.0, right: 2.0),
                                     child: Icon(Icons.create,
-                                        size: 18.0,
+                                        size: 16.0,
                                         color: Colors.white), // Created icon
                                   ),
                                 ),
@@ -128,7 +129,7 @@ class _RequestsPageState extends State<RequestsPage> {
                                       '$createdCount', // Display created box count
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -168,6 +169,7 @@ class _RequestsPageState extends State<RequestsPage> {
         heroTag: 'requestFAB',
         tooltip: 'Add Request',
         child: const Icon(Icons.add),
+        backgroundColor: Color.fromARGB(255, 136, 63, 82),
       ),
     );
   }
@@ -231,15 +233,19 @@ class _RequestsPageState extends State<RequestsPage> {
     );
   }
 
-  void _scanQRCode() async {
-    String? scannedCode = await Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const QRScanPage()),
-    );
-
-    if (scannedCode != null) {
-      _validateAndNavigate(scannedCode);
-    }
-  }
+void _scanQRCode() async {
+  // Push the BarcodeScannerPage and handle the scanned barcode through a callback
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (context) => BarcodeScannerPage(
+        onBarcodeScanned: (scannedCode) {
+          Navigator.of(context).pop(); // Ensure you pop the scanner page
+          _validateAndNavigate(scannedCode);
+        },
+      ),
+    ),
+  );
+}
 
   void _validateAndNavigate(String boxId) async {
     // Check if a box with the scanned ID exists in Firestore

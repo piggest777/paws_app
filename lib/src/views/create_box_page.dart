@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:paws_app/src/models/box.dart'; // Import your Box model
+import 'package:paws_app/src/models/box.dart';
+import 'package:paws_app/src/services/firebase_service.dart'; 
 
 class CreateBoxPage extends StatefulWidget {
   final String requestId;
@@ -15,6 +16,7 @@ class CreateBoxPage extends StatefulWidget {
 class _CreateBoxPageState extends State<CreateBoxPage> {
   BoxSize? _selectedSize;
   BoxType? _selectedType;
+  final fsService = FirebaseService();
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +71,7 @@ class _CreateBoxPageState extends State<CreateBoxPage> {
 
 void _saveBoxAndNavigateBack(BuildContext context) async {
   if (_selectedSize != null && _selectedType != null) {
-    int currentCounter = await _getCurrentCounter();
+    int currentCounter = await fsService.getCurrentCounter();
     
     // Create a new box object with the current counter as boxID
     Box newBox = Box(
@@ -93,31 +95,13 @@ void _saveBoxAndNavigateBack(BuildContext context) async {
   }
 }
 
-Future<int> _getCurrentCounter() async {
-  try {
-    var counterDoc = await FirebaseFirestore.instance.collection('counters').doc('boxId').get();
-    if (counterDoc.exists) {
-      return counterDoc.data()?['current'] ?? 1; // Assuming 'current' is the field name
-    } else {
-      print('Counter document does not exist');
-      return 1; // Default starting value
-    }
-  } catch (e) {
-    print('Error fetching counter: $e');
-    return 1; // Handle error scenario
-  }
-}
-
-
 Future<void> _addBoxToFirebase(Box box, int currentCounter) async {
   var boxesCollection = FirebaseFirestore.instance.collection('boxes');
   
   await boxesCollection.add(box.toMap()).then((boxRef) async {
     // Increment the counter in Firebase
-    await FirebaseFirestore.instance.collection('counters').doc('boxId').update({
-      'current': currentCounter + 1
-    });
-
+    await fsService.incrementCounter(currentCounter + 1);
+    
     // Update the request's box count for 'created' status
     await _incrementCreatedBoxCountInRequest(box.requestId);
   }).catchError((error) {

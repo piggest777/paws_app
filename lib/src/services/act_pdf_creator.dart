@@ -12,6 +12,7 @@ class ActPdfCreator {
 
     required String organizationName,
     required String organizationNumber,
+    required String? recipientOrganizationName,
     required String recipientName,
     required String? recipientNumber,
     required String postNumber,
@@ -88,7 +89,7 @@ class ActPdfCreator {
                   pw.Text('Отримувач: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(recipientName, style: const pw.TextStyle(fontSize: 12)),
+                  pw.Text(recipientOrganizationName ?? recipientName, style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               pw.Row(

@@ -55,6 +55,25 @@ class FirebaseService {
   }
 }
 
+  Future<int> getCurrentCounter() async {
+  try {
+    var counterDoc = await FirebaseFirestore.instance.collection('counters').doc('boxId').get();
+    if (counterDoc.exists) {
+      return counterDoc.data()?['current'] ?? 1; // Assuming 'current' is the field name
+    } else {
+      print('Counter document does not exist');
+      return 1; // Default starting value
+    }
+  } catch (e) {
+    print('Error fetching counter: $e');
+    return 1; // Handle error scenario
+  }
+}
+
+  Future<void> incrementCounter(int newCounter) async {
+    await FirebaseFirestore.instance.collection('counters').doc('boxId').update({'current': newCounter});
+  }
+
   Future<void> addItemToBox(BoxItem boxItem) async {
     try {
       await _firestore.collection('boxItems').doc(boxItem.id).set(boxItem.toMap());

@@ -25,7 +25,7 @@ class _CounterCardWidgetState extends State<CounterCardWidget> {
     counterValue = widget.initialValue;
     editedValue = counterValue; // Initialize editedValue as a double
     _controller =
-        TextEditingController(text: widget.initialValue.toStringAsFixed(1));
+        TextEditingController(text: widget.initialValue.toStringAsFixed(2));
   }
 
   void _addFraction(double fraction) {
@@ -99,7 +99,7 @@ void _onSavePressed() {
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(
-                      RegExp(r'^\d*[,\.]?\d{0,1}')),
+                      RegExp(r'^\d*[,\.]?\d{0,3}')),
                 ],
               ),
               const SizedBox(height: 20),
@@ -115,7 +115,7 @@ void _onSavePressed() {
                     editedValue +=
                         additionalValue; // Add the additionalValue to the existing count
                     _controller.text = editedValue
-                        .toStringAsFixed(1); // Reflect this in the TextField
+                        .toStringAsFixed(2); // Reflect this in the TextField
                     isValueChanged = true;
                   });
                   widget.onSave(editedValue); // Persist the new total value

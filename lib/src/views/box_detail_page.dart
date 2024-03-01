@@ -37,6 +37,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   String? comment;
   String? requestName;
   Person? person;
+  String? organizationName;
 
   @override
   void dispose() {
@@ -47,85 +48,141 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   @override
   void initState() {
     super.initState();
+    box = widget.box;
+    boxId = box?.id ?? widget.boxId;
+    isLoading = true;
 
-    if (widget.box != null && widget.request != null) {
-      // Both Box and Request objects are provided
-      box = widget.box;
-      boxId = box?.id;
-      request = widget.request;
-      selectedSize = widget.box?.size;
-      selectedType = widget.box?.type;
-      selectedStatus = widget.box?.status ?? BoxStatus.created;
-      selectedLocation = widget.box?.location ?? BoxLocation.office;
-      comment = widget.box?.comment ?? '';
-      requestName = widget.request?.name;
-      _commentController.text = widget.box?.comment ?? '';
-      fetchPersonDetails(request?.personId);
-    } else if (widget.boxId != null) {
-      boxId = widget.boxId;
-      // Only Box ID is provided, fetch Box and then Request
-      fetchBoxAndRequestDetails(boxId!);
+    if (box != null) {
+      // When a box is directly passed to the widget
+      initializeBoxDetails();
+    } else if (boxId != null) {
+      // If only the boxId is provided, fetch box details first
+      fetchBoxDetails(boxId!);
+    } else {
+      // Handle the case where no box or boxId is provided (error state or blank slate)
+      isLoading = false;
     }
   }
 
-  void fetchBoxAndRequestDetails(String boxId) async {
-    setState(() => isLoading = true);
+  void initializeBoxDetails() {
+    selectedSize = box?.size;
+    selectedType = box?.type;
+    selectedStatus = box?.status ?? BoxStatus.created;
+    selectedLocation = box?.location ?? BoxLocation.office;
+    comment = box?.comment ?? '';
+    _commentController.text = box?.comment ?? '';
+    organizationName = box?.organizationName;
+
+    if (widget.request != null) {
+      // Use the request object passed to the widget, if available
+      request = widget.request;
+      requestName = '${request?.name} ${request?.surname}';
+      organizationName = request?.organizationName;
+      if (person == null) {
+        // Fetch person details if necessary
+        fetchPersonDetails(request!.personId);
+      } else {
+        isLoading = false;
+      }
+    } else if (box!.isDirectToPerson) {
+      organizationName = box?.organizationName;
+      // If the box is directly connected to a person, fetch the person's details
+      fetchPersonDetails(box!.requestId); // Here requestId is personId
+    } else {
+      // Otherwise, fetch the related request
+      fetchRequestDetails(box!.requestId);
+    }
+  }
+
+  void fetchBoxDetails(String boxId) async {
     try {
       var boxSnapshot =
           await FirebaseFirestore.instance.collection('boxes').doc(boxId).get();
       if (boxSnapshot.exists) {
-        var fetchedBox = Box.fromMap(boxSnapshot.data()!, boxId);
-        var requestSnapshot = await FirebaseFirestore.instance
-            .collection('requests')
-            .doc(fetchedBox.requestId)
-            .get();
+        setState(() {
+          box = Box.fromMap(boxSnapshot.data()!, boxId);
+          selectedSize = box?.size;
+          selectedType = box?.type;
+          selectedStatus = box?.status ?? BoxStatus.created;
+          selectedLocation = box?.location ?? BoxLocation.office;
+          comment = box?.comment ?? '';
+          _commentController.text = box?.comment ?? '';
+          organizationName = box?.organizationName;
 
-        if (requestSnapshot.exists) {
-          setState(() {
-            box = fetchedBox;
-            request =
-                Request.fromMap(requestSnapshot.data()!, fetchedBox.requestId);
-            selectedSize = fetchedBox.size;
-            selectedType = fetchedBox.type;
-            selectedStatus = fetchedBox.status;
-            selectedLocation = fetchedBox.location;
-            comment = fetchedBox.comment;
-            _commentController.text = fetchedBox.comment;
-            requestName = requestSnapshot.data()!['name'];
-            fetchPersonDetails(request?.personId);
-            isLoading = false;
-          });
-        } else {
-          print('Request not found');
-          setState(() => isLoading = false);
-        }
+          requestName = box?.requesterName ?? '';
+
+          if (box!.isDirectToPerson) {
+            fetchPersonDetails(box!.requestId); // Here requestId is personId
+          } else {
+            fetchRequestDetails(box!.requestId);
+          }
+        });
       } else {
         print('Box not found');
         setState(() => isLoading = false);
       }
     } catch (e) {
-      print('Error fetching box and request details: $e');
+      print('Error fetching box details: $e');
       setState(() => isLoading = false);
     }
   }
 
-  void fetchPersonDetails(String? personId) async {
+  void fetchRequestDetails(String requestId) async {
+    setState(() => isLoading = true); // Start loading
+
+    try {
+      var requestSnapshot = await FirebaseFirestore.instance
+          .collection('requests')
+          .doc(requestId)
+          .get();
+      if (requestSnapshot.exists) {
+        var fetchedRequest =
+            Request.fromMap(requestSnapshot.data()!, requestId);
+
+        setState(() {
+          request = fetchedRequest;
+          requestName = '${fetchedRequest.name} ${fetchedRequest.surname}';
+          organizationName = request?.organizationName;
+          // No need to set isLoading = false here as we might be fetching person details next
+        });
+
+        // Check if person details are already available or not
+        if (person == null) {
+          fetchPersonDetails(fetchedRequest
+              .personId); // Fetch person details using the personId from fetchedRequest
+        } else {
+          setState(() => isLoading =
+              false); // If person details are already available or no personId, stop loading
+        }
+      } else {
+        print('Request not found');
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print('Error fetching request details: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  void fetchPersonDetails(String personId) async {
     try {
       var personSnapshot = await FirebaseFirestore.instance
           .collection('persons')
           .doc(personId)
           .get();
-
       if (personSnapshot.exists) {
         setState(() {
           person = Person.fromMap(personSnapshot.data()!, personSnapshot.id);
+          requestName = '${person?.name} ${person?.surname}';
+          isLoading = false;
         });
       } else {
-        print(
-            'Person not found'); // Handle the case where the person does not exist
+        print('Person not found');
+        setState(() => isLoading = false);
       }
     } catch (e) {
-      print('Error fetching person: $e'); // Handle any errors here
+      print('Error fetching person details: $e');
+      setState(() => isLoading = false);
     }
   }
 
@@ -152,12 +209,15 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
           IconButton(
             icon: const Icon(Icons.add_box),
             onPressed: () {
-
               if (boxId != null) {
                 Navigator.of(context).push(
-                MaterialPageRoute(
-                    builder: (context) => BoxItemsPage(boxId: boxId!, request: request, person: person,)),
-              );
+                  MaterialPageRoute(
+                      builder: (context) => BoxItemsPage(
+                            boxId: boxId!,
+                            organizationName: organizationName,
+                            person: person,
+                          )),
+                );
               }
             },
           ), // Place the delete button in the AppBar
@@ -182,7 +242,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                       child: Column(
                         children: [
                           Text(
-                            '${request?.name ?? ''} ${request?.surname ?? ''}',
+                            requestName ?? '',
                             style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
@@ -214,31 +274,31 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                 _buildCommentSection(),
                 const SizedBox(height: 5),
                 if (box != null &&
-                    request != null &&
-                    person != null) // Check if both objects are created
+                    person != null) // Check if necessary objects are created
                   Center(
                     child: Column(
                       children: [
-                        const SizedBox(height: 10,),
+                        const SizedBox(height: 10),
                         ElevatedButton(
                           onPressed: _createAndSharePdf,
                           child: const Text('Create and Share PDF'),
                         ),
-                        const SizedBox(height: 10,),
-                        if (boxId != null)
+                        const SizedBox(height: 10),
+                        if (request != null && boxId != null) ...[
                           ElevatedButton(
                             onPressed: () => _navigateToRequestDetails(context),
                             child: const Text('View Request Details'),
                           ),
+                          const SizedBox(height: 10),
+                        ],
+                        // Add spacing for visual separation
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 16.0),
+                              vertical: 0.0, horizontal: 16.0),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red),
-                            onPressed: () {
-                              _showDeleteConfirmationDialog();
-                            },
+                            onPressed: _showDeleteConfirmationDialog,
                             child: const Text('Delete Box'),
                           ),
                         ),
@@ -271,7 +331,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   void _createAndSharePdf() async {
     if (widget.box?.id != null || boxId != null) {
       PDFManager pdfManager =
-          PDFManager(box: box, request: request, person: person);
+          PDFManager(box: box, organizationName: organizationName, person: person);
       pdfManager.createAndSharePdf();
     } else {
       print("can't create pdf without box id");
@@ -387,7 +447,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
             const SizedBox(width: 8), // Spacer between text and dropdown
             // Limit the width of the dropdown list
             SizedBox(
-              width: 100, // Adjust the width as needed
+              width: 120, // Adjust the width as needed
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<BoxLocation>(
                   value: selectedLocation,

@@ -5,7 +5,14 @@ import 'package:paws_app/src/views/create_request_page.dart';
 import '../models/person.dart';
 
 class AddPersonPage extends StatefulWidget {
-  const AddPersonPage({super.key});
+  final bool isFromRecipientSearch;
+  final Function(String)? onPersonAddedCallback;
+
+  const AddPersonPage({
+    super.key,
+    this.isFromRecipientSearch = false,
+    this.onPersonAddedCallback,
+  });
 
   @override
   _AddPersonPageState createState() => _AddPersonPageState();
@@ -101,7 +108,7 @@ class _AddPersonPageState extends State<AddPersonPage> {
                                   _addPersonAndProceed(true);
                                 }
                               },
-                              child: const Text('Add and Create Request'),
+                              child: const Text('Add and proceed'),
                             ),
                           ),
                           ElevatedButton(
@@ -152,6 +159,15 @@ class _AddPersonPageState extends State<AddPersonPage> {
         phone: phone,
       );
 
+   if (widget.isFromRecipientSearch) {
+      // If this page was opened from the recipient search page,
+      // call the callback function with the new person's surname.
+      widget.onPersonAddedCallback?.call(newPerson.surname);
+
+      // Return to the recipient search page.
+      Navigator.of(context).pop();
+    } else {
+      // Your existing logic for navigation
       if (proceedToNextStep) {
         // Navigate to the next step
         Navigator.of(context).pushReplacement(
@@ -163,6 +179,7 @@ class _AddPersonPageState extends State<AddPersonPage> {
         // Return to the previous screen after adding
         Navigator.of(context).pop();
       }
+    }
     } catch (e) {
       // Handle any errors here
       print(e.toString());

@@ -45,59 +45,65 @@ class PawsApp extends StatelessWidget {
   const PawsApp({super.key});
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = ThemeData();
+    // final ThemeData theme = ThemeData();
     const Color myColor = Color.fromARGB(255, 83, 136, 63);
+    final ThemeData theme = ThemeData(
+  useMaterial3: true, // Enable Material 3
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: myColor, // Use this to generate a palette
+    // Specify additional individual colors as needed
+    primary: myColor,
+    secondary: Colors.white,
+    // Add other custom colors if needed
+  ),
+  // For button theming in Material 3, use the style properties of each button type
+  // For example, for ElevatedButton:
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      foregroundColor: Colors.white, backgroundColor: myColor, // Text color
+    ),
+  ),
+  // Switch Theme in Material 3
+  switchTheme: SwitchThemeData(
+    thumbColor: MaterialStateProperty.resolveWith<Color>(
+      (Set<MaterialState> states) {
+        if (states.contains(MaterialState.selected)) {
+          return myColor; // For selected state
+        }
+        return Colors.white; // For default state
+      },
+    ),
+    trackColor: MaterialStateProperty.resolveWith<Color>(
+      (Set<MaterialState> states) {
+        if (states.contains(MaterialState.selected)) {
+          return myColor.withOpacity(0.5); // For selected state
+        }
+        return Colors.grey.withOpacity(0.5); // For default state
+      },
+    ),
+  ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+    backgroundColor: myColor, // Background color of the button
+    foregroundColor: Colors.white, // This sets the icon color
+    // Add other customizations as needed
+  ),
+  // AppBar Theme in Material 3
+  appBarTheme: AppBarTheme(
+    backgroundColor: myColor, // AppBar background color
+    // Customize the title text style here
+    titleTextStyle: TextStyle(
+      color: Colors.white, // Set your desired text color here
+      fontSize: 20, // Optionally set font size
+      fontWeight: FontWeight.bold, // Optionally set font weight
+    ),
+    // If you also want to customize the icon color in AppBar:
+    iconTheme: IconThemeData(color: Colors.white),
+  ),
+);
 
     return MaterialApp(
       title: 'Paws of peace',
-      theme: theme.copyWith(
-        buttonTheme: const ButtonThemeData(
-          buttonColor: myColor, // sets the color of `ElevatedButton`
-          textTheme: ButtonTextTheme
-              .primary, // makes text white on the `ElevatedButton`
-        ),
-        colorScheme: ThemeData().colorScheme.copyWith(
-              primary: myColor,
-              secondary: Colors
-                  .white, // sets the secondary color in the colorScheme which is used as an accent color in some contexts
-            ),
-        switchTheme: SwitchThemeData(
-          // // Define the thumb color when the switch is on
-          thumbColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.selected)) {
-                return myColor; // Replace 'myColor' with your color
-              }
-              return Colors.white; // Default thumb color when not selected
-            },
-          ),
-          // Define the track color when the switch is on
-          trackColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.selected)) {
-                return myColor.withOpacity(
-                    0.5); // Replace 'myColor' with your color and adjust opacity
-              }
-              return Colors.grey
-                  .withOpacity(0.5); // Default track color when not selected
-            },
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          color: myColor, // sets the color of the AppBar
-        ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: myColor,
-            hoverColor:
-                myColor // sets the background color of the FloatingActionButton
-            ),
-                    iconTheme: const IconThemeData(
-          color: Colors.black, // Default icon color
-        ),
-        primaryIconTheme: const IconThemeData(
-          color: Colors.black, // Primary icon color, used in AppBar etc.
-        ),
-      ),
+      theme: theme,
       initialRoute: '/',
       routes: {
         '/': (context) => const HomePage(),

@@ -12,9 +12,10 @@ import 'package:paws_app/src/views/view_components/pdf_preview.dart';
 
 class ActFormPage extends StatefulWidget {
 final Person? person;
+final String? organizationName;
 final List<ActItem> items;
 
-  const ActFormPage({super.key, this.person, required this.items});
+  const ActFormPage({super.key, this.person, this.organizationName, required this.items});
 
   @override
   _ActFormPageState createState() => _ActFormPageState();
@@ -25,6 +26,7 @@ class _ActFormPageState extends State<ActFormPage> {
   final ActInformation _actInformation = ActInformation(); 
 
     // Declare TextEditingControllers for each form field
+  late TextEditingController _recipientOrganizationNameController;
   late TextEditingController _recipientNameController;
   late TextEditingController _postNumberController; // Assuming this maps to novaPostBranch
   late TextEditingController _addressController; // Assuming combination of region and city
@@ -37,6 +39,7 @@ class _ActFormPageState extends State<ActFormPage> {
     super.initState();
 
     // Initialize controllers with person data if provided, else initialize with empty string
+    _recipientOrganizationNameController = TextEditingController(text: widget.organizationName ?? '');
     _recipientNameController = TextEditingController(text: widget.person != null ? '${widget.person!.name} ${widget.person!.surname}' : '');
 
     _postNumberController = TextEditingController(text: widget.person?.novaPostBranch ?? '');
@@ -47,6 +50,7 @@ class _ActFormPageState extends State<ActFormPage> {
     @override
   void dispose() {
     // Dispose controllers to avoid memory leaks
+    _recipientOrganizationNameController.dispose();
     _recipientNameController.dispose();
     _postNumberController.dispose();
     _addressController.dispose();
@@ -78,6 +82,13 @@ class _ActFormPageState extends State<ActFormPage> {
                 decoration: const InputDecoration(labelText: 'Receiver Fond Number'),
                 onSaved: (value) {
                   _actInformation.reciverFondNumber = value ?? '';
+                },
+              ),
+              TextFormField(
+                controller: _recipientOrganizationNameController,
+                decoration: const InputDecoration(labelText: 'Recipient organisation'),
+                onSaved: (value) {
+                  _actInformation.recipientOrganizationName = value ?? '';
                 },
               ),
               TextFormField(
@@ -139,6 +150,7 @@ void _submitForm() async {
     final pdfFile = await ActPdfCreator.createBoxItemsPdf(
       organizationName: _actInformation.reciverFondName,
       organizationNumber: _actInformation.reciverFondNumber,
+      recipientOrganizationName: _actInformation.recipientOrganizationName.isEmpty ? null: _actInformation.recipientOrganizationName,
       recipientName: _actInformation.recipientName,
       recipientNumber: _actInformation.recipientNumber.isEmpty ? null : _actInformation.recipientNumber,
       postNumber: _actInformation.postNumber,

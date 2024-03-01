@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart'; // Import this package for date formatting
 import 'package:paws_app/src/models/box.dart';
 import 'package:paws_app/src/utils/box_status_util.dart';
@@ -26,9 +27,12 @@ class BoxCard extends StatelessWidget {
     children: <Widget>[
       BoxStatusUtil.getIconForStatus(box.status),
       const SizedBox(width: 10),
-      Text(
-        box.requesterName, // Fallback to 'Unknown' if null
-        style: const TextStyle(fontSize: 14),
+      Expanded(
+        child: Text(
+          box.requesterName, // Fallback to 'Unknown' if null
+          style: const TextStyle(fontSize: 14),
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     ],
   ),
@@ -39,7 +43,7 @@ class BoxCard extends StatelessWidget {
   trailing: const Icon(Icons.chevron_right),
   onTap: () {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (context) => BoxDetailsPage(boxId: box.id,),
+      builder: (context) => BoxDetailsPage(box: box,),
     ));
   },
 );

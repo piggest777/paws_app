@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:paws_app/src/models/box.dart';
+import 'package:paws_app/src/views/create_indvidual_box.dart';
 import 'package:paws_app/src/views/view_components/box_card.dart';
 
 class BoxListView extends StatefulWidget {
@@ -37,16 +39,29 @@ class _BoxListViewState extends State<BoxListView> {
               _showFilterOptions(context);
             },
           ),
+          IconButton(
+            icon: Icon(Symbols.box_add),
+            onPressed: () {
+              // Navigate to the new screen when the button is pressed
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        CreateIndividualBoxPage()
+                        ), // Replace YourNewScreen with the actual class of your new screen
+              );
+            },
+          ),
         ],
       ),
       body: Column(
         children: [
-              if (currentFilterStatus != null)
-BoxCountLabel(
-  key: ValueKey(currentFilterStatus),
-  filterStatus: currentFilterStatus,
-  stream: _filteredBoxStream(),
-),
+          if (currentFilterStatus != null)
+            BoxCountLabel(
+              key: ValueKey(currentFilterStatus),
+              filterStatus: currentFilterStatus,
+              stream: _filteredBoxStream(),
+            ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _filteredBoxStream(),

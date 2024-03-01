@@ -24,35 +24,76 @@ class BoxItemService {
 
   // Stream for real-time updates
   Stream<List<BoxItem>> fetchBoxItemsAsStream(String boxId) {
-    return _db.collection(_collectionPath)
-      .where('boxId', isEqualTo: boxId)
-      .snapshots()
-      .map((snapshot) => snapshot.docs
-        .map((doc) => BoxItem.fromMap(doc.data(), doc.id))
-        .toList());
-  }
-
-  Future<List<ActItem>> getActItems(String boxId) async {
-  List<ActItem> actItems = [];
-  int counter = 1;
-
-  try {
-    // Assuming you're using Firestore and have a collection named 'boxItems'
-    final querySnapshot = await FirebaseFirestore.instance
+    return _db
         .collection('boxItems')
         .where('boxId', isEqualTo: boxId)
-        .get();
-
-    for (var doc in querySnapshot.docs) {
-      BoxItem item = BoxItem.fromMap(doc.data(), doc.id);
-      actItems.add(ActItemConverter.convertToActItem(item, counter++));
-    }
-  } catch (e) {
-    print("Error fetching items: $e");
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => BoxItem.fromMap(doc.data(), doc.id)).toList());
   }
 
-  return actItems;
+  // Delete a box item with the given ID
+  Future<void> deleteBoxItem(String id) async {
+    try {
+      await _db.collection(_collectionPath).doc(id).delete();
+    } catch (e) {
+      // Handle or throw the error as needed
+      throw Exception('Error deleting box item: $e');
+    }
+  }
+
+Future<void> recalculateAndUpdateBoxWeight(String boxId) async {
+  try {
+    final items = await fetchBoxItems(boxId); // Fetch all items for the box
+    final totalWeight = items.fold(0.0, (sumWeight, item) => sumWeight + item.basicWeight * item.count); // Calculate total weight
+
+    // Update the box's total weight in Firestore
+    await FirebaseFirestore.instance.collection('boxes').doc(boxId).update({
+      'weight': totalWeight
+    });
+  } catch (e) {
+    throw Exception('Error recalculating box weight: $e');
+  }
 }
+
+  Future<List<ActItem>> getActItems(String boxId) async {
+    Map<String, ActItem> groupedActItems = {};
+    int counter = 1;
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('boxItems')
+          .where('boxId', isEqualTo: boxId)
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        BoxItem item = BoxItem.fromMap(doc.data(), doc.id);
+        ActItem actItem = ActItemConverter.convertToActItem(item, counter++);
+        
+        // If the description already exists, update quantity and nettoWeight
+        if (groupedActItems.containsKey(actItem.description)) {
+          ActItem existingItem = groupedActItems[actItem.description]!;
+          existingItem.quantity += actItem.quantity;
+          existingItem.nettoWeight += actItem.nettoWeight;
+        } else {
+          groupedActItems[actItem.description] = actItem;
+        }
+      }
+    } catch (e) {
+      print("Error fetching items: $e");
+    }
+
+    // Convert the map back to a list of ActItems
+    List<ActItem> actItems = groupedActItems.values.toList();
+
+    // Optionally, you might want to reset the numbering
+    int number = 1;
+    for (var item in actItems) {
+      item.number = number++;
+    }
+
+    return actItems;
+  }
 
   // Add a new box item
   Future<void> addBoxItem(BoxItem boxItem) async {
@@ -74,13 +115,4 @@ class BoxItemService {
     }
   }
 
-  // Delete a box item
-  Future<void> deleteBoxItem(String id) async {
-    try {
-      await _db.collection(_collectionPath).doc(id).delete();
-    } catch (e) {
-      // Handle or throw the error as needed
-      throw Exception('Error deleting box item: $e');
-    }
-  }
 }

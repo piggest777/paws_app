@@ -58,5 +58,7 @@
 	</array>
     <key>NSCameraUsageDescription</key>
     <string>We need access to camera to be able scan QR codes on box</string>
+    <key>FLTEnableImpeller</key>
+    <false />
 </dict>
 </plist>

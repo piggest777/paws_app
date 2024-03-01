@@ -1,5 +1,4 @@
 import 'package:paws_app/src/models/person.dart';
-import 'package:paws_app/src/models/request.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -16,10 +15,10 @@ import 'package:universal_html/html.dart' as html;
 
 class PDFManager {
   final Box? box;
-  final Request? request;
+  final String? organizationName;
   final Person? person;
 
-  PDFManager({this.box, this.request, this.person});
+  PDFManager({this.box, this.organizationName, this.person});
 
   Future<void> createAndSharePdf() async {
     // final pdf = pw.Document();
@@ -97,10 +96,10 @@ class PDFManager {
                           ),
                     ),
                     pw.SizedBox(height: 5),
-                    if (request?.organizationName != null &&
-                        request!.organizationName!.isNotEmpty)
+                    if (organizationName != null &&
+                        organizationName!.isNotEmpty)
                       pw.Text(
-                        '${request!.organizationName}',
+                        organizationName!,
                         style: pw.TextStyle(
                             font: ttf,
                             fontSize: 18,
@@ -178,7 +177,7 @@ class PDFManager {
       // Running on mobile (Android or iOS)
       final output = await getTemporaryDirectory();
       final file = File(
-          "${output.path}/${request?.surname != null && request!.surname.isNotEmpty ? '${request!.surname}_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
+          "${output.path}/${box?.requesterName != null && box!.requesterName.isNotEmpty ? '${box!.requesterName}_' : ''}box_N${box?.boxID ?? 'details'}.pdf");
       await file.writeAsBytes(pdfData);
       Share.shareXFiles([XFile(file.path)], text: 'Box Details PDF');
     }

@@ -9,6 +9,8 @@ class Box {
   String id; // Firebase document ID
   int boxID; // Simplified box ID
   String requestId; // Request document ID this box is connected to
+  bool isDirectToPerson;
+  String? organizationName;
   DateTime? creationDate; // Field for creation date
   DateTime? packingDate; // Field for packing date
   DateTime? sendingDate; // Field for sending date
@@ -24,7 +26,9 @@ class Box {
   Box({
     required this.id,
     required this.boxID,
-    required this.requestId, 
+    required this.requestId,
+    this.isDirectToPerson = false,
+    this.organizationName, 
     required this.size, 
     required this.type, 
     required this.status,
@@ -43,6 +47,8 @@ Map<String, dynamic> toMap() {
     'id': id,
     'boxID': boxID,
     'requestId': requestId,
+    'isDirectToPerson': isDirectToPerson,
+    'organizationName': organizationName,
     'size': size.toString().split('.').last, 
     'type': type.toString().split('.').last, 
     'status': status.toString().split('.').last,
@@ -60,6 +66,8 @@ Map<String, dynamic> toMap() {
     id: id,
     boxID: map['boxID'] ?? '',
     requestId: map['requestId'],
+    isDirectToPerson: map['isDirectToPerson'] ?? false,
+    organizationName: map['organizationName'],
     size: BoxSize.values.firstWhere(
       (e) => e.toString() == 'BoxSize.' + (map['size'] ?? 'small'), // Default to small if size is not found
       orElse: () => BoxSize.small,

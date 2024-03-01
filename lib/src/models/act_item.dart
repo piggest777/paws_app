@@ -1,10 +1,10 @@
 class ActItem {
-  final int number;
+  int number;
   final String description;
   final String units;
   final String packing;
-  final double quantity;
-  final double nettoWeight;
+  double quantity;
+  double nettoWeight;
 
   ActItem({
     required this.number,

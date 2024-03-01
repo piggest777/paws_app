@@ -7,6 +7,7 @@ class ActInformation {
   // String declarationCode;
   // String declarationDate;
   // String humanitarianAidCode;
+  String recipientOrganizationName;
   String recipientName;
   String recipientNumber;
   String postNumber;
@@ -21,6 +22,7 @@ class ActInformation {
     // this.declarationCode = '',
     // this.declarationDate = '',
     // this.humanitarianAidCode = '',
+    this.recipientOrganizationName = '',
     this.recipientName = '',
     this.recipientNumber = '',
     this.postNumber = '',
