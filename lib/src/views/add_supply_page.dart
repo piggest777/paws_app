@@ -275,7 +275,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
                   'Underlay',
                   'Pet home',
                   'Care products',
-                  'Pet carrier'
+                  'Pet carrier',
                   'Cages',
                   'Common'
                 ],

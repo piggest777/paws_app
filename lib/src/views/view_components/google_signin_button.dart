@@ -56,15 +56,16 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                     bool isWhitelisted =
                         await checkIfUserIsWhitelisted(user.email);
                     if (isWhitelisted) {
+                      if (!mounted) return; // Add this check here
                       Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (context) => const HomePage(
                               initialTabIndex:
-                                  0) // Assuming the Requests tab is at index 0
-                          ));
+                                  0))); // Assuming the Requests tab is at index 0
                     } else {
                       // User is not in the whitelist
                       await _authService
                           .signOut(); // Optional: sign out the user
+                      if (!mounted) return; // Add this check here
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
@@ -74,7 +75,11 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                           actions: <Widget>[
                             TextButton(
                               child: const Text('OK'),
-                              onPressed: () => Navigator.of(context).pop(),
+                              onPressed: () {
+                                if (!mounted)
+                                  return; // Guard with mounted check
+                                Navigator.of(context).pop();
+                              },
                             ),
                           ],
                         ),
@@ -82,9 +87,10 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                     }
                   }
                 } catch (e) {
-                  // Handle errors
+                  print('error during signin');
                 } finally {
                   if (mounted) {
+                    // This check ensures the widget is still in the tree
                     setState(() {
                       _isSigningIn = false;
                     });
