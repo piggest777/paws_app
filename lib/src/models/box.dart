@@ -20,7 +20,8 @@ class Box {
   BoxStatus status;
   BoxLocation location; 
   String comment;
-  double weight; // Field for weight
+  double weight;
+  double boxWeight;// Field for weight
 
 
   Box({
@@ -39,6 +40,7 @@ class Box {
     this.weight = 0.0, // Default value for weight
     this.packingDate,
     this.sendingDate,
+    this.boxWeight = 0.0
     });
 
   // Method to convert box object to a map, useful for Firebase
@@ -57,6 +59,7 @@ Map<String, dynamic> toMap() {
     'creationDate': creationDate ?? FieldValue.serverTimestamp(), // Use server timestamp if no date is provided
     'requesterName': requesterName,
     'weight': weight,
+    'boxWeight': boxWeight
   };
 }
 
@@ -90,6 +93,7 @@ Map<String, dynamic> toMap() {
     weight: map['weight']?.toDouble() ?? 0.0, // Ensure you get a double
     packingDate: map['packingDate'] is Timestamp ? (map['packingDate'] as Timestamp).toDate() : null,
     sendingDate: map['sendingDate'] is Timestamp ? (map['sendingDate'] as Timestamp).toDate() : null,
+    boxWeight: map['boxWeight']?.toDouble() ?? 0.0,
   );
   }
 }

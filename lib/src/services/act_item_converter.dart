@@ -1,9 +1,10 @@
 import 'package:paws_app/src/models/act_item.dart';
 import 'package:paws_app/src/models/box_item.dart';
+import 'package:paws_app/src/services/box_item_service.dart';
 
 class ActItemConverter {
   static ActItem convertToActItem(BoxItem boxItem, int number) {
-    String description = _getDescription(boxItem);
+    String description = BoxItemService.getDescription(boxItem);
     String units = "шт."; // Always 'шт.' according to your rules
     String packing = _getPacking(boxItem.supplyType, boxItem.packaging);
     double quantity = boxItem.count; // Default quantity is 1
@@ -17,54 +18,6 @@ class ActItemConverter {
       quantity: quantity,
       nettoWeight: nettoWeight,
     );
-  }
-
-  static String _getDescription(BoxItem item) {
-    switch (item.supplyType) {
-      case "Food":
-        if (item.foodType == "Wet") return 'м’який корм для тварин';
-        if (item.foodType == "Dry") return 'сухий корм для тварин';
-        return 'Їжа для тварин'; // Fallback for food without specific type
-
-      case "Snacks":
-        return 'Снек';
-
-      case "Medical":
-        return 'Медицина';
-
-      case "Clothes":
-        return 'Одяг для тварин';
-
-      case "Toys":
-        return 'Іграшки';
-
-      case "Leashes":
-        return 'Поводок';
-
-      case "Collars":
-        return 'Ошейник';
-
-      case "Underlay":
-        return 'Підстилка';
-
-      case "Bowl":
-        return 'Миска';
-
-      case "Pet home":
-        return 'Лежанка';
-
-      case "Care products":
-        return 'Засоби піклування для тварин';
-
-      case "Pet carrier":
-        return 'Переноска';
-
-      case "Cages":
-        return 'Клітка';
-
-      default:
-        return 'Різне'; // Fallback for unspecified or new types
-    }
   }
 
   static String _getPacking(String? supplyType, String? packaging) {

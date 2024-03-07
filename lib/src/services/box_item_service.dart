@@ -22,6 +22,69 @@ class BoxItemService {
     }
   }
 
+    static String getDescription(BoxItem item) {
+
+  if (item.ukTranslation != null && item.ukTranslation!.isNotEmpty) {
+    return item.ukTranslation!;
+  }
+
+    switch (item.supplyType) {
+      case "Food":
+        if (item.foodType == "Wet") return 'м’який корм для тварин';
+        if (item.foodType == "Dry") return 'сухий корм для тварин';
+        return 'Їжа для тварин'; // Fallback for food without specific type
+
+      case "Snacks":
+        return 'Снек';
+
+      case "Medical":
+        return 'Медицина';
+
+      case "Clothes":
+        return 'Одяг для тварин';
+
+      case "Toys":
+        return 'Іграшки';
+
+      case "Leashes":
+        return 'Поводок';
+
+      case "Collars":
+        return 'Ошейник';
+
+      case "Underlay":
+        return 'Підстилка';
+
+      case "Bowls":
+        return 'Миска';
+
+      case "Pet home":
+        return 'Лежанка';
+
+      case "Care products":
+        return 'Засоби піклування для тварин';
+
+      case "Shampoo":
+        return "Шампунь";
+        
+      case "Brushes":
+        return "Розчіска";
+
+      case "Nail clippers":
+        return "Розчіска";
+
+      case "Pet carrier":
+        return 'Переноска';
+
+      case "Cages":
+        return 'Клітка';
+      case "Boxes":
+      return 'Вантаж';
+      default:
+        return 'Різне'; // Fallback for unspecified or new types
+    }
+  }
+
   // Stream for real-time updates
   Stream<List<BoxItem>> fetchBoxItemsAsStream(String boxId) {
     return _db
@@ -114,5 +177,28 @@ Future<void> recalculateAndUpdateBoxWeight(String boxId) async {
       throw Exception('Error updating box item: $e');
     }
   }
+
+    Future<void> updateBoxWeight(String boxId, double newWeight) async {
+    try {
+      await _db.collection('boxes').doc(boxId).update({'boxWeight': newWeight});
+    } catch (e) {
+      print(e); // Consider handling errors more gracefully
+    }
+  }
+
+Future<double> fetchBoxWeight(String boxId) async {
+  try {
+    DocumentSnapshot boxDoc = await _db.collection('boxes').doc(boxId).get();
+    var data = boxDoc.data();
+    if (data is Map<String, dynamic>) { // Cast the data to a Map
+      return data['boxWeight']?.toDouble() ?? 0.0; // Ensure you safely cast to double
+    } else {
+      return 0.0; // Return a default value if casting fails or data is not as expected
+    }
+  } catch (e) {
+    print(e); // Consider handling errors more gracefully
+    return 0.0;
+  }
+}
 
 }

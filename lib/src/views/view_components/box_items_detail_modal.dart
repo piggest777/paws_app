@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:paws_app/src/models/box_item.dart';
+import 'package:paws_app/src/services/box_item_service.dart';
+import 'package:paws_app/src/views/box_item_modal_details_content.dart';
 
 class BoxItemDetailsModal {
   final BoxItem item;
   final BuildContext context;
+  final VoidCallback onUpdate; // Callback to refresh after updates
 
-  BoxItemDetailsModal({required this.context, required this.item});
+  BoxItemDetailsModal({required this.context, required this.item, required this.onUpdate});
 
   void showDetailsModal() {
     showModalBottomSheet(
@@ -14,107 +16,22 @@ class BoxItemDetailsModal {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return Container(
-          padding: EdgeInsets.only(top: 16, left: 16, right: 16, bottom: MediaQuery.of(context).viewInsets.bottom + 16),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildModalHandle(),
-              const SizedBox(height: 8),
-              Text(item.name, style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              if (item.barcode != null) _buildBarcodeRow(context),
-              _buildDetailRow('Count:', item.count.toStringAsFixed(1)),
-              _buildDetailRow('Total Weight:', '${(item.count * item.basicWeight).toStringAsFixed(2)} kg'),
-              if (item.manufacturer != null) _buildDetailRow('Manufacturer:', item.manufacturer!),
-              _buildTypesColumn(context),
-              const SizedBox(height: 20),
-            ],
-          ),
+        return BoxItemDetailsModalContent(
+          item: item,
+          onSave: (double count, double weight, String ukTranslation) {
+            // Here, we assume that BoxItem has a method or mechanism to update itself
+            BoxItemService().updateBoxItem(item.copyWith(
+              count: count,
+              basicWeight: weight,
+              ukTranslation: ukTranslation,
+            )).then((_) {
+              onUpdate(); // Call onUpdate to refresh the parent view
+            }).catchError((error) {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating item: $error')));
+            });
+          },
         );
       },
     );
   }
-
-  Widget _buildModalHandle() {
-    return Center(
-      child: Container(
-        width: 40,
-        height: 5,
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: BorderRadius.circular(10),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBarcodeRow(BuildContext context) {
-    return Row(
-      children: [
-        Icon(Icons.qr_code, color: Theme.of(context).primaryColor),
-        const SizedBox(width: 8),
-        Expanded(child: Text(item.barcode!)),
-      ],
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Row(
-        children: [
-          Text('$label ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Expanded(child: Text(value)),
-        ],
-      ),
-    );
-  }
-
-Widget _buildTypesColumn(BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Divider(),
-        _buildTypeInfo(context, Icon(MdiIcons.dog), 'For Whom:', item.forWhom ?? 'N/A'),
-        _buildTypeInfo(context, Icon(MdiIcons.sort), 'Supply Type:', item.supplyType ?? 'N/A'),
-        _buildTypeInfo(context, Icon(MdiIcons.nutrition), 'Food Type:', item.foodType ?? 'N/A'),
-        _buildTypeInfo(context, Icon(MdiIcons.package), 'Packaging:', item.packaging ?? 'N/A'),
-      ],
-    ),
-  );
-}
-
-Widget _buildTypeInfo(BuildContext context, Icon icon, String title, String info) {
-  ThemeData theme = Theme.of(context);
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Row(
-      children: [
-        icon,
-        const SizedBox(width: 8),
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              style: TextStyle(fontSize: 14, color: theme.textTheme.bodyLarge!.color),
-              children: [
-                TextSpan(text: '$title ', style: const TextStyle(fontWeight: FontWeight.bold)),
-                TextSpan(text: info, style: TextStyle(color: Colors.grey[600])),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
 }

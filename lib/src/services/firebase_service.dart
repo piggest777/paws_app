@@ -45,6 +45,7 @@ class FirebaseService {
     var querySnapshot = await _firestore
         .collection('petSupplyType')
         .where('isGeneric', isEqualTo: true)
+        .orderBy('name')
         .get();
     return querySnapshot.docs
         .map((doc) => PetCareSupply.fromMap(doc.data(), doc.id))

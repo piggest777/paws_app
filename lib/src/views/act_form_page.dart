@@ -14,8 +14,10 @@ class ActFormPage extends StatefulWidget {
 final Person? person;
 final String? organizationName;
 final List<ActItem> items;
+final double boxWeight;
 
-  const ActFormPage({super.key, this.person, this.organizationName, required this.items});
+
+  const ActFormPage({super.key, this.person, this.organizationName, required this.items, required this.boxWeight});
 
   @override
   _ActFormPageState createState() => _ActFormPageState();
@@ -24,6 +26,7 @@ final List<ActItem> items;
 class _ActFormPageState extends State<ActFormPage> {
   final _formKey = GlobalKey<FormState>();
   final ActInformation _actInformation = ActInformation(); 
+  late List<ActItem> adjustedItems;
 
     // Declare TextEditingControllers for each form field
   late TextEditingController _recipientOrganizationNameController;
@@ -45,6 +48,33 @@ class _ActFormPageState extends State<ActFormPage> {
     _postNumberController = TextEditingController(text: widget.person?.novaPostBranch ?? '');
     _addressController = TextEditingController(text: widget.person != null ? '${widget.person!.region}, ${widget.person!.city}' : '');
     _phoneNumberController = TextEditingController(text: widget.person?.phone ?? '');
+
+    adjustedItems = _adjustItemsWithBoxWeight(widget.items, widget.boxWeight);
+  }
+
+    List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
+    // Calculate the total netto weight of all items
+    final totalNettoWeight = items.fold<double>(0.0, (sum, item) => sum + (item.nettoWeight * item.quantity));
+
+    // Calculate the total weight including the box
+    final totalWeightWithBox = totalNettoWeight + boxWeight;
+
+    // Distribute the box weight across items based on their proportion of the total weight
+    final adjustedItems = items.map((item) {
+      final itemProportion = (item.nettoWeight * item.quantity) / totalNettoWeight;
+      final adjustedWeight = ((item.nettoWeight * item.quantity) + (boxWeight * itemProportion)) / item.quantity;
+
+      return ActItem(
+        number: item.number,
+        description: item.description,
+        units: item.units,
+        packing: item.packing,
+        quantity: item.quantity,
+        nettoWeight: adjustedWeight,
+      );
+    }).toList();
+
+    return adjustedItems;
   }
 
     @override
@@ -156,7 +186,7 @@ void _submitForm() async {
       postNumber: _actInformation.postNumber,
       address: _actInformation.address,
       phoneNumber: _actInformation.phoneNumber,
-      items: widget.items, // Make sure to pass the actual list of items
+      items: adjustedItems, // Make sure to pass the actual list of items
     );
 
     // Display the PDF

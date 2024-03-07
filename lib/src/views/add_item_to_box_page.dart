@@ -21,6 +21,7 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
   TextEditingController searchController = TextEditingController();
 
   String lastScannedData = '';
+  String? customTranslation;
 
   @override
   void initState() {
@@ -109,40 +110,62 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
     }
   }
 
-  Future<double?> _requestCustomWeight() async {
+Future<Map<String, dynamic>?> _requestCustomWeightAndTranslation() async {
   double? customWeight;
+  String? ukTranslation;
+
   await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Enter Custom Weight'),
-          content: TextField(
-            autofocus: true,
-            decoration: const InputDecoration(hintText: 'Weight (kg)'),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            onChanged: (value) {
-              String input = value.replaceAll(',', '.');
-              customWeight = double.tryParse(input);
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
+    context: context,
+    builder: (BuildContext context) {
+      TextEditingController weightController = TextEditingController();
+      TextEditingController translationController = TextEditingController();
+
+      return AlertDialog(
+        title: const Text('Enter Custom Weight and Translation'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min, // To prevent AlertDialog from occupying full screen height
+          children: [
+            TextField(
+              controller: weightController,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Weight (kg)'),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              onChanged: (value) {
+                String input = value.replaceAll(',', '.');
+                customWeight = double.tryParse(input);
               },
             ),
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop(customWeight);
+            TextField(
+              controller: translationController,
+              decoration: const InputDecoration(hintText: 'Ukrainian Translation (optional)'),
+              onChanged: (value) {
+                ukTranslation = value;
+                
               },
             ),
           ],
-        );
-      });
-  return customWeight;
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () {
+              Navigator.of(context).pop({'weight': customWeight, 'translation': ukTranslation});
+            },
+          ),
+        ],
+      );
+    },
+  );
+
+  return {'weight': customWeight, 'translation': ukTranslation};
 }
+
 
 
   Widget _buildSearchBar() {
@@ -208,18 +231,23 @@ void _addItemToBoxAndDecrementCount(PetCareSupply supply, double quantityToAdd) 
 
   // Check if the supply item is generic
   if (supply.isGeneric) {
-    // Request custom weight from the user
-    final double? customWeight = await _requestCustomWeight();
-    if (customWeight == null || customWeight <= 0) {
+    // Request custom weight and Ukrainian translation from the user
+    Map<String, dynamic>? result = await _requestCustomWeightAndTranslation();
+    
+    // Check if result is not null and customWeight is valid
+    if (result != null && result['weight'] != null && result['weight'] > 0) {
+      double customWeight = result['weight'];
+      String? ukTranslation = result['translation']; // May be null if the user did not enter a translation
+      
+      // Adjust the box item with the custom weight and optional Ukrainian translation
+      BoxItem boxItem = BoxItem.fromPetCareSupplyWithCustomWeight(supply, widget.boxId, quantityToAdd, customWeight, ukTranslation);
+      _addBoxItemWithCustomWeight(boxItem, supply.id, quantityToAdd);
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid weight entered.')),
       );
       return;
     }
-
-    // Adjust the box item with the custom weight
-    BoxItem boxItem = BoxItem.fromPetCareSupplyWithCustomWeight(supply, widget.boxId, quantityToAdd, customWeight);
-    _addBoxItemWithCustomWeight(boxItem, supply.id, quantityToAdd);
   } else {
     // If not generic, proceed as normal
     BoxItem boxItem = BoxItem.fromPetCareSupply(supply, widget.boxId, quantityToAdd);

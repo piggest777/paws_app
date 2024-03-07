@@ -321,6 +321,56 @@ void _requestCustomWeightDialog(PetCareSupply supply, double quantityToAdd) {
   );
 }
 
+void _requestCustomDetailsDialog(PetCareSupply supply, double quantityToAdd) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      final TextEditingController customWeightController = TextEditingController();
+      final TextEditingController ukTranslationController = TextEditingController(); // Controller for the Ukrainian translation input
+      
+      return AlertDialog(
+        title: const Text('Enter Details for Generic Item'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: customWeightController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(hintText: 'Weight (kg)'),
+            ),
+            TextField(
+              controller: ukTranslationController,
+              decoration: const InputDecoration(hintText: 'Ukrainian Translation (optional)'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text('Add'),
+            onPressed: () {
+              double customWeight = double.tryParse(customWeightController.text.replaceAll(',', '.')) ?? 0.0;
+              String? ukTranslation = ukTranslationController.text.isNotEmpty ? ukTranslationController.text : null;
+              
+              if (customWeight <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter a valid weight.')),
+                );
+                return;
+              }
+              Navigator.of(context).pop(); // Close the dialog
+              _proceedWithAddition(supply, quantityToAdd, customWeight, ukTranslation);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 void _showConfirmationDialog(PetCareSupply supply, double quantityToAdd) {
   showDialog(
     context: context,
@@ -346,9 +396,9 @@ void _showConfirmationDialog(PetCareSupply supply, double quantityToAdd) {
   );
 }
 
-void _proceedWithAddition(PetCareSupply supply, double quantityToAdd, double customWeight) {
+void _proceedWithAddition(PetCareSupply supply, double quantityToAdd, double customWeight, [String? ukTranslation]) {
 
-  BoxItem boxItem = _prepareBoxForAddition(supply, quantityToAdd, customWeight);
+  BoxItem boxItem = _prepareBoxForAddition(supply, quantityToAdd, customWeight, ukTranslation);
 
   FirebaseService().addItemToBoxAndDecrementCount(boxItem, supply.id, quantityToAdd)
       .then((_) {
@@ -370,9 +420,9 @@ void _proceedWithAddition(PetCareSupply supply, double quantityToAdd, double cus
       });
 }
 
-BoxItem _prepareBoxForAddition(PetCareSupply supply, double quantityToAdd, double customWeight) {
+BoxItem _prepareBoxForAddition(PetCareSupply supply, double quantityToAdd, double customWeight, String? ukTranslation) {
     if  (supply.isGeneric) {
-      return BoxItem.fromPetCareSupplyWithCustomWeight(supply, widget.boxId, quantityToAdd, customWeight);
+      return BoxItem.fromPetCareSupplyWithCustomWeight(supply, widget.boxId, quantityToAdd, customWeight, ukTranslation);
   } else {
     return BoxItem.fromPetCareSupply(supply, widget.boxId, quantityToAdd);
   }

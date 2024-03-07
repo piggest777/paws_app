@@ -145,7 +145,7 @@ class ActPdfCreator {
           _createProductTable(items, context),
           pw.SizedBox(height: 10),
           pw.Paragraph(
-              text: 'Всього: $totalPackages пакунок вагою $totalWeight кг',
+              text: 'Всього: $totalPackages пакунок вагою ${totalWeight.toStringAsFixed(2)} кг',
               style: const pw.TextStyle(fontSize: 12)),
           pw.Paragraph(
               text:
