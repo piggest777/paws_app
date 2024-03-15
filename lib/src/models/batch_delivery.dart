@@ -7,6 +7,7 @@ class BatchDelivery {
   int month;
   int year;
   List<String> boxList;
+  String? name;
 
   BatchDelivery({
     required this.id,
@@ -15,6 +16,7 @@ class BatchDelivery {
     required this.month,
     required this.year,
     required this.boxList,
+    this.name,
   });
 
   // Converts a Firestore document to a BatchDelivery object
@@ -28,6 +30,7 @@ class BatchDelivery {
       month: date.month,
       year: date.year,
       boxList: List<String>.from(map['boxList'] ?? []),
+      name: map['name'],
     );
   }
 
@@ -40,6 +43,7 @@ class BatchDelivery {
       'month': date.month,
       'year': date.year,
       'boxList': boxList,
+      'name': name, 
     };
   }
 }

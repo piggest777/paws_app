@@ -353,7 +353,7 @@ class _AddSupplyPageState extends State<AddSupplyPage> {
 
       // Determine the supply type based on conditions
       String finalSupplyType = selectedSupplyType!;
-      if (selectedSupplyType == "Care Products" && selectedPetCareItemType != null) {
+      if (selectedSupplyType == "Care products" && selectedPetCareItemType != null) {
         finalSupplyType = selectedPetCareItemType!;
       }
 

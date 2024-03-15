@@ -67,7 +67,8 @@ class _BoxListViewState extends State<BoxListView> {
               stream: _filteredBoxStream(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  var boxes = snapshot.data!.docs.map((doc) {
+                  var boxes = snapshot
+                  .data!.docs.map((doc) {
                     return Box.fromMap(
                         doc.data() as Map<String, dynamic>, doc.id);
                   }).toList();
@@ -79,6 +80,7 @@ class _BoxListViewState extends State<BoxListView> {
                     },
                   );
                 } else if (snapshot.hasError) {
+                  print(snapshot.error);
                   return const Center(child: Text('Error fetching boxes'));
                 } else {
                   return const Center(child: Text('No boxes found'));
@@ -119,10 +121,14 @@ class _BoxListViewState extends State<BoxListView> {
     if (currentFilterStatus != null) {
       return collection
           .where('status', isEqualTo: _formatStatus(currentFilterStatus!))
+          .where('archived', isEqualTo: false)
           .orderBy('boxID')
           .snapshots();
     }
-    return collection.orderBy('boxID').snapshots();
+    return collection
+    .where('archived', isEqualTo: false)
+    .orderBy('boxID')
+    .snapshots();
   }
 
   String _formatStatus(BoxStatus status) {

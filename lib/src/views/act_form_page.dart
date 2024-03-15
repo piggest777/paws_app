@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/act_information.dart';
@@ -7,8 +6,7 @@ import 'package:paws_app/src/models/act_item.dart';
 import 'package:paws_app/src/models/person.dart';
 import 'package:paws_app/src/services/act_pdf_creator.dart';
 import 'package:paws_app/src/views/view_components/pdf_preview.dart';
-// Define this model based on your needs
-// import 'package:paws_app/src/utils/pdf_generator.dart'; // Assume this utility class exists for PDF generation
+
 
 class ActFormPage extends StatefulWidget {
 final Person? person;
@@ -27,6 +25,7 @@ class _ActFormPageState extends State<ActFormPage> {
   final _formKey = GlobalKey<FormState>();
   final ActInformation _actInformation = ActInformation(); 
   late List<ActItem> adjustedItems;
+  double totalAdjustedWeight = 0.0; 
 
     // Declare TextEditingControllers for each form field
   late TextEditingController _recipientOrganizationNameController;
@@ -50,32 +49,47 @@ class _ActFormPageState extends State<ActFormPage> {
     _phoneNumberController = TextEditingController(text: widget.person?.phone ?? '');
 
     adjustedItems = _adjustItemsWithBoxWeight(widget.items, widget.boxWeight);
+    _calculateTotalAdjustedWeight();
   }
 
-    List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
+List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
     // Calculate the total netto weight of all items
-    final totalNettoWeight = items.fold<double>(0.0, (sum, item) => sum + (item.nettoWeight * item.quantity));
+    final totalNettoWeight = items.fold<double>(0.0, (sum, item) => sum + item.nettoWeight);
 
     // Calculate the total weight including the box
     final totalWeightWithBox = totalNettoWeight + boxWeight;
 
-    // Distribute the box weight across items based on their proportion of the total weight
+    // Calculate how much weight each item needs to absorb from the box weight, based on their proportion of the total netto weight
     final adjustedItems = items.map((item) {
-      final itemProportion = (item.nettoWeight * item.quantity) / totalNettoWeight;
-      final adjustedWeight = ((item.nettoWeight * item.quantity) + (boxWeight * itemProportion)) / item.quantity;
+        // Determine this item's proportion of the total netto weight
+        final itemProportion = item.nettoWeight / totalNettoWeight;
+        // Calculate the additional weight this item needs to absorb from the box
+        final additionalWeightFromBox = boxWeight * itemProportion;
+        // Adjust this item's netto weight to include its share of the box weight
+        final adjustedNettoWeight = item.nettoWeight + additionalWeightFromBox;
 
-      return ActItem(
-        number: item.number,
-        description: item.description,
-        units: item.units,
-        packing: item.packing,
-        quantity: item.quantity,
-        nettoWeight: adjustedWeight,
-      );
+        return ActItem(
+            number: item.number,
+            description: item.description,
+            units: item.units,
+            packing: item.packing,
+            quantity: item.quantity,
+            nettoWeight: adjustedNettoWeight,
+        );
     }).toList();
 
     return adjustedItems;
+}
+
+  void _calculateTotalAdjustedWeight() {
+    totalAdjustedWeight = adjustedItems.fold<double>(
+        0.0, (sum, item) => sum + item.nettoWeight);
+    setState(() {
+      // Set the state variable with the new total
+      totalAdjustedWeight; // Include the box weight in the total
+    });
   }
+
 
     @override
   void dispose() {
@@ -156,25 +170,87 @@ class _ActFormPageState extends State<ActFormPage> {
                   _actInformation.phoneNumber = value ?? '';
                 },
               ),
-              const SizedBox(height: 20,),
-              ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Generate and View PDF'),
-              ),
+              SizedBox(height: 20,),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              'Total Adjusted Weight: ${totalAdjustedWeight.toStringAsFixed(2)} kg',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+                          Text(
+              'Preview',
+              style: Theme.of(context).textTheme.headline6,
+            ),
+    Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: _buildItemsPreviewList(), // Display the compact list here
+    ),
             ],
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+      onPressed: _submitForm,
+      child: Icon(Icons.picture_as_pdf),
+      tooltip: 'Generate and View PDF',
+    ),
     );
   }
+
+Widget _buildItemsPreviewList() {
+  return ListView.separated(
+    shrinkWrap: true,
+    physics: NeverScrollableScrollPhysics(),
+    itemCount: adjustedItems.length,
+    itemBuilder: (context, index) {
+      final item = adjustedItems[index];
+      return Container(
+        padding: EdgeInsets.all(8), // Padding inside each container
+        decoration: BoxDecoration(
+          color: Colors.white, // Consider using Theme.of(context).canvasColor
+          borderRadius: BorderRadius.circular(8), // Rounded corners for the container
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2), // Shadow color
+              spreadRadius: 1,
+              blurRadius: 3,
+              offset: Offset(0, 1), // Shadow position
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.label, size: 20, color: Theme.of(context).primaryColor), // Leading icon
+            SizedBox(width: 16), // Space between icon and text
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.description,
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis, // Prevent text overflow
+                  ),
+                  SizedBox(height: 4), // Space between description and weight
+                  Text(
+                    '${item.nettoWeight.toStringAsFixed(2)} kg - Qty: ${item.quantity}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+    separatorBuilder: (context, index) => SizedBox(height: 4), // Space between items
+  );
+}
 
 void _submitForm() async {
   if (_formKey.currentState!.validate()) {
     _formKey.currentState!.save();
-
-    // Assuming you have a method to gather items for the act
-  
-    // Populate this list with actual items
 
     // Generate PDF
     final pdfFile = await ActPdfCreator.createBoxItemsPdf(
@@ -186,14 +262,13 @@ void _submitForm() async {
       postNumber: _actInformation.postNumber,
       address: _actInformation.address,
       phoneNumber: _actInformation.phoneNumber,
-      items: adjustedItems, // Make sure to pass the actual list of items
+      items: adjustedItems, 
     );
 
     // Display the PDF
     if (!kIsWeb) {
         _displayPdf(pdfFile);
     }
-
   }
 }
 

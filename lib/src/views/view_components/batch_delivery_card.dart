@@ -10,7 +10,10 @@ class BatchDeliveryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat('yyyy-MM-dd').format(delivery.date);
+    String formattedDate = DateFormat('MMM d, yyyy').format(delivery.date);
+    String titleText = delivery.name != null && delivery.name!.isNotEmpty
+        ? '${delivery.name}: $formattedDate'
+        : 'Batch from $formattedDate';
 
     return Card(
       child: ListTile(
@@ -21,7 +24,7 @@ class BatchDeliveryCard extends StatelessWidget {
             style: const TextStyle(color: Colors.white),
           ),
         ),
-        title: Text('Delivery on $formattedDate'),
+        title: Text(titleText),
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           // Navigate to BatchDeliveryDetailsPage with the selected batch delivery ID
@@ -33,3 +36,4 @@ class BatchDeliveryCard extends StatelessWidget {
     );
   }
 }
+

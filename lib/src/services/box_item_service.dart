@@ -71,7 +71,7 @@ class BoxItemService {
         return "Розчіска";
 
       case "Nail clippers":
-        return "Розчіска";
+        return "Кігтеріз";
 
       case "Pet carrier":
         return 'Переноска';
@@ -118,6 +118,12 @@ Future<void> recalculateAndUpdateBoxWeight(String boxId) async {
     throw Exception('Error recalculating box weight: $e');
   }
 }
+
+  Future<void> updateTotalWeight(String boxId, double totalWeight) async {
+    await FirebaseFirestore.instance.collection('boxes').doc(boxId).update({
+      'weight': totalWeight,
+    });
+  }
 
   Future<List<ActItem>> getActItems(String boxId) async {
     Map<String, ActItem> groupedActItems = {};

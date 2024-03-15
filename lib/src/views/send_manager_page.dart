@@ -7,7 +7,36 @@ import 'package:paws_app/src/views/view_components/batch_delivery_card.dart';
 class SentItemsManagerPage extends StatelessWidget {
   const SentItemsManagerPage({super.key});
 
-  Future<void> _createNewBatchDelivery(BuildContext context) async {
+Future<void> _createNewBatchDelivery(BuildContext context) async {
+  // Show confirmation dialog
+  String? batchName = await showDialog<String>(
+    context: context,
+    builder: (BuildContext context) {
+      TextEditingController nameController = TextEditingController();
+      return AlertDialog(
+        title: const Text('Batch Delivery Name'),
+        content: TextField(
+          controller: nameController,
+          decoration: const InputDecoration(
+            hintText: 'Enter name for the new batch delivery',
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(), // Cancel without name
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(nameController.text), // Submit name
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+
+  // Proceed only if confirmation is true
+  if (batchName != null && batchName.isNotEmpty) {
     // Get the current counter value and increment it
     var counterRef = FirebaseFirestore.instance
         .collection('counters')
@@ -25,7 +54,8 @@ class SentItemsManagerPage extends StatelessWidget {
       day: now.day,
       month: now.month,
       year: now.year,
-      boxList: [], // initial boxList
+      boxList: [],
+      name: batchName,
     );
 
     // Add the new batch delivery to Firestore
@@ -40,6 +70,8 @@ class SentItemsManagerPage extends StatelessWidget {
           BatchDeliveryDetailsPage(batchDeliveryId: newBatchDelivery.id),
     ));
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

@@ -9,7 +9,6 @@ import 'package:universal_html/html.dart' as html;
 
 class ActPdfCreator {
   static Future<File> createBoxItemsPdf({
-
     required String organizationName,
     required String organizationNumber,
     required String? recipientOrganizationName,
@@ -20,9 +19,10 @@ class ActPdfCreator {
     required String phoneNumber,
     required List<ActItem> items,
   }) async {
-
-    final totalPackages = items.fold<double>(0, (sum, item) => sum + item.quantity);
-    final totalWeight = items.fold<double>(0, (sum, item) => sum + item.nettoWeight);
+    final totalPackages =
+        items.fold<double>(0, (sum, item) => sum + item.quantity);
+    final totalWeight =
+        items.fold<double>(0, (sum, item) => sum + item.nettoWeight);
 
     final fontData = await rootBundle.load('assets/fonts/Times New Roman.ttf');
     final ttf = pw.Font.ttf(fontData);
@@ -32,12 +32,10 @@ class ActPdfCreator {
     final ttfBold = pw.Font.ttf(fontBoldData);
 
     final theme = pw.ThemeData.withFont(
-      base: ttf, 
-      bold:
-          ttfBold,
-      italic:
-          ttf, 
-      boldItalic: ttf, 
+      base: ttf,
+      bold: ttfBold,
+      italic: ttf,
+      boldItalic: ttf,
     );
 
     final pdf = pw.Document(theme: theme);
@@ -58,9 +56,7 @@ class ActPdfCreator {
                   pw.TextAlign.center, // Ensure text alignment is centered
             ),
           ),
-
           pw.SizedBox(height: 20),
-
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -79,7 +75,6 @@ class ActPdfCreator {
               pw.SizedBox(height: 20),
             ],
           ),
-
           pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -89,7 +84,8 @@ class ActPdfCreator {
                   pw.Text('Отримувач: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(recipientOrganizationName ?? recipientName, style: const pw.TextStyle(fontSize: 12)),
+                  pw.Text(recipientOrganizationName ?? recipientName,
+                      style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               pw.Row(
@@ -98,7 +94,8 @@ class ActPdfCreator {
                   pw.Text('ЄДРПОУ / ІПН: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(recipientNumber ?? '________________', style: const pw.TextStyle(fontSize: 12)),
+                  pw.Text(recipientNumber ?? '________________',
+                      style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               // Assuming there is a specific value for ЄДРПОУ / ІПН, you would include it here as well
@@ -108,7 +105,8 @@ class ActPdfCreator {
                   pw.Text('Доставка: ',
                       style: pw.TextStyle(
                           fontWeight: pw.FontWeight.bold, fontSize: 12)),
-                  pw.Text(recipientName, style: const pw.TextStyle(fontSize: 12)),
+                  pw.Text(recipientName,
+                      style: const pw.TextStyle(fontSize: 12)),
                 ],
               ),
               pw.Row(
@@ -141,11 +139,11 @@ class ActPdfCreator {
             ],
           ),
           pw.SizedBox(height: 20),
-
           _createProductTable(items, context),
           pw.SizedBox(height: 10),
           pw.Paragraph(
-              text: 'Всього: $totalPackages пакунок вагою ${totalWeight.toStringAsFixed(2)} кг',
+              text:
+                  'Всього: $totalPackages пакунок вагою ${totalWeight.toStringAsFixed(2)} кг',
               style: const pw.TextStyle(fontSize: 12)),
           pw.Paragraph(
               text:
@@ -172,8 +170,6 @@ class ActPdfCreator {
       ),
     );
 
-
-
     final pdfData = await pdf.save();
 
     if (kIsWeb) {
@@ -188,10 +184,9 @@ class ActPdfCreator {
     } else {
       // Running on mobile (Android or iOS)
       final output = await getTemporaryDirectory();
-      final file = File(
-          "${output.path}/$recipientName.pdf");
+      final file = File("${output.path}/$recipientName.pdf");
       await file.writeAsBytes(pdfData);
-     return file;
+      return file;
     }
   }
 
@@ -212,8 +207,11 @@ class ActPdfCreator {
           decoration: const pw.BoxDecoration(color: PdfColors.grey300),
           children: [
             _buildCell('№', context, alignment: pw.Alignment.center),
-            _buildCell('Товар/\nProduct description', context,
-                alignment: pw.Alignment.centerLeft,),
+            _buildCell(
+              'Товар/\nProduct description',
+              context,
+              alignment: pw.Alignment.centerLeft,
+            ),
             _buildCell('Одиниці/\nUnits', context,
                 alignment: pw.Alignment.center),
             _buildCell('Упаковка/\nPacking', context,
@@ -257,7 +255,8 @@ class ActPdfCreator {
       alignment: alignment,
       child: pw.Text(text,
           style: pw.TextStyle(
-              fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal, fontSize: 9)),
+              fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+              fontSize: 9)),
     );
   }
 }

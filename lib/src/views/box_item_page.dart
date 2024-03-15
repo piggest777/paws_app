@@ -42,15 +42,19 @@ class _BoxItemsPageState extends State<BoxItemsPage> {
   });
 }
 
-  void _calculateTotalWeight() async {
-    final items = await BoxItemService().fetchBoxItems(widget.boxId);
-    double itemsTotalWeight =
-        items.fold(0.0, (sum, item) => sum + (item.count * item.basicWeight));
-    setState(() {
-      _totalWeight =
-          itemsTotalWeight + _boxWeight; // Include box weight in total
-    });
-  }
+void _calculateTotalWeight() async {
+  final items = await BoxItemService().fetchBoxItems(widget.boxId);
+  double itemsTotalWeight =
+      items.fold(0.0, (sum, item) => sum + (item.count * item.basicWeight));
+  double newTotalWeight = itemsTotalWeight + _boxWeight; // Include box weight in total
+
+  setState(() {
+    _totalWeight = newTotalWeight;
+  });
+
+  // Update the total weight in Firebase
+  await BoxItemService().updateTotalWeight(widget.boxId, newTotalWeight);
+}
 
   @override
   Widget build(BuildContext context) {
@@ -306,8 +310,6 @@ void _editBoxWeight() {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text('Item removed')));
         _calculateTotalWeight();
-    // Recalculate and update the box's weight
-    await BoxItemService().recalculateAndUpdateBoxWeight(widget.boxId);
   }
 
   Future<void> onCreatePdfPressed() async {

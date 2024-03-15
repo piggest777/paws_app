@@ -259,6 +259,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                 _buildBoxDetailsCard(),
                 const SizedBox(height: 5),
                 WeightInputWidget(
+                  key: ValueKey(box?.weight),
                   initialWeight: box?.weight ?? 0.0,
                   onWeightChanged: (newWeight) {
                     setState(() {
@@ -811,21 +812,22 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     );
   }
 
-  Future<void> _deleteBox() async {
-    if (box?.id == null || box?.requestId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Error: Box ID or Request ID is not available'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
+Future<void> _deleteBox() async {
+  if (box?.id == null || (!box!.isDirectToPerson && box?.requestId == null)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Error: Box ID is not available or Box is not linked to a direct request'),
+        backgroundColor: Colors.red,
+      ),
+    );
+    return;
+  }
 
-    final DocumentReference requestDocRef =
-        FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
+  FirebaseFirestore.instance.runTransaction((transaction) async {
+    if (!box!.isDirectToPerson) {
+      final DocumentReference requestDocRef =
+          FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
 
-    FirebaseFirestore.instance.runTransaction((transaction) async {
       // Fetch the current request document
       final DocumentSnapshot requestSnapshot =
           await transaction.get(requestDocRef);
@@ -847,29 +849,32 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
 
       // Update the request document with the new box status counts
       transaction.update(requestDocRef, {'boxStatusCounts': boxStatusCounts});
+    }
 
-      // Delete the box document
-      transaction
-          .delete(FirebaseFirestore.instance.collection('boxes').doc(box!.id));
-    }).then((_) {
-      // Navigate back after successful deletion and update
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Box deleted successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }).catchError((error) {
-      // Handle any errors here
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting box: $error'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    });
-  }
+    // Archive the box document
+    final DocumentReference boxDocRef =
+        FirebaseFirestore.instance.collection('boxes').doc(box!.id);
+    transaction.update(boxDocRef, {'archived': true});
+  }).then((_) {
+    // Navigate back after successful update
+    Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Box archived successfully'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }).catchError((error) {
+    // Handle any errors here
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error archiving box: $error'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  });
+}
+
 
   void _showDeleteConfirmationDialog() {
     showDialog(

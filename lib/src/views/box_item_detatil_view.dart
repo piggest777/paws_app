@@ -132,49 +132,6 @@ Widget _buildBarcodeAndCount() {
   );
 }
 
-void _requestCustomWeight(PetCareSupply supply, double quantityToAdd) {
-  // Show a dialog to input custom weight
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      // Use a TextEditingController to capture the input weight
-      final TextEditingController weightController = TextEditingController();
-      return AlertDialog(
-        title: const Text('Enter Custom Weight'),
-        content: TextField(
-          controller: weightController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Weight (kg)',
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: const Text('Add'),
-            onPressed: () {
-              Navigator.of(context).pop();
-              double customWeight = double.tryParse(weightController.text.replaceAll(',', '.')) ?? 0.0;
-              if (customWeight <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid weight.')),
-                );
-                return;
-              }
-              // Proceed with adding the item with the custom weight
-              _proceedWithAddition(supply, quantityToAdd, customWeight);
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-
 Widget _buildQuantityInput() {
   return Row(
     mainAxisAlignment: MainAxisAlignment.center,
@@ -274,7 +231,7 @@ void _addItemToBoxAndDecrementCount(PetCareSupply supply) {
 
   if (supply.isGeneric) {
     // If the item is generic, show a dialog to input custom weight
-    _requestCustomWeightDialog(supply, quantityToAdd);
+    _requestCustomDetailsDialog(supply, quantityToAdd);
   } else {
     if (quantityToAdd > supply.count && !supply.isGeneric) {
       _showConfirmationDialog(supply, quantityToAdd);
@@ -284,92 +241,80 @@ void _addItemToBoxAndDecrementCount(PetCareSupply supply) {
   }
 }
 
-void _requestCustomWeightDialog(PetCareSupply supply, double quantityToAdd) {
+
+
+void _requestCustomDetailsDialog(PetCareSupply supply, double quantityToAdd) {
+  final TextEditingController customWeightController = TextEditingController();
+  final TextEditingController ukTranslationController = TextEditingController();
+  final bool isTranslationRequired = supply.supplyType == null || supply.supplyType == "Medical" || supply.supplyType == "Care products";
+  // State to manage visibility of the error message
+  String? errorMessage;
+
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      final TextEditingController customWeightController = TextEditingController();
-      return AlertDialog(
-        title: const Text('Enter Weight for Generic Item'),
-        content: TextField(
-          controller: customWeightController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(hintText: 'Weight (kg)'),
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: const Text('Add'),
-            onPressed: () {
-              double customWeight = double.tryParse(customWeightController.text.replaceAll(',', '.')) ?? 0.0;
-              if (customWeight <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid weight.')),
-                );
-                return;
-              }
-              Navigator.of(context).pop(); // Close the dialog
-              _proceedWithAddition(supply, quantityToAdd, customWeight);
-            },
-          ),
-        ],
+      return StatefulBuilder( // Use StatefulBuilder to update the dialog's state
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Enter Details for Generic Item'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: customWeightController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(hintText: 'Weight (kg)'),
+                  ),
+                  TextField(
+                    controller: ukTranslationController,
+                    decoration: InputDecoration(
+                      hintText: isTranslationRequired ? 'Ukrainian Translation (Required)' : 'Ukrainian Translation (Optional)',
+                      labelText: isTranslationRequired ? 'Ukrainian Translation (Required)' : 'Ukrainian Translation (Optional)',
+                    ),
+                  ),
+                  // Display error message if applicable
+                  if (errorMessage != null) Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(errorMessage!, style: TextStyle(color: Colors.red, fontSize: 14)),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: const Text('Add'),
+                onPressed: () {
+                  double customWeight = double.tryParse(customWeightController.text.replaceAll(',', '.')) ?? 0.0;
+                  customWeight = customWeight < 0.01 ? 0.01 : customWeight;
+                  String? ukTranslation = ukTranslationController.text.isNotEmpty ? ukTranslationController.text : null;
+
+                  if (isTranslationRequired && ukTranslation == null) {
+                    // Update error message and refresh dialog state
+                    setState(() {
+                      errorMessage = 'Ukrainian translation is required for this supply type.';
+                    });
+                    return; // Keep the dialog open
+                  }
+
+                  // Clear error message before closing
+                  Navigator.of(context).pop(); // Close the dialog
+              _proceedWithAddition(supply, quantityToAdd, customWeight, ukTranslation);
+                },
+              ),
+            ],
+          );
+        },
       );
     },
   );
 }
 
-void _requestCustomDetailsDialog(PetCareSupply supply, double quantityToAdd) {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      final TextEditingController customWeightController = TextEditingController();
-      final TextEditingController ukTranslationController = TextEditingController(); // Controller for the Ukrainian translation input
-      
-      return AlertDialog(
-        title: const Text('Enter Details for Generic Item'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: customWeightController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(hintText: 'Weight (kg)'),
-            ),
-            TextField(
-              controller: ukTranslationController,
-              decoration: const InputDecoration(hintText: 'Ukrainian Translation (optional)'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          TextButton(
-            child: const Text('Add'),
-            onPressed: () {
-              double customWeight = double.tryParse(customWeightController.text.replaceAll(',', '.')) ?? 0.0;
-              String? ukTranslation = ukTranslationController.text.isNotEmpty ? ukTranslationController.text : null;
-              
-              if (customWeight <= 0) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a valid weight.')),
-                );
-                return;
-              }
-              Navigator.of(context).pop(); // Close the dialog
-              _proceedWithAddition(supply, quantityToAdd, customWeight, ukTranslation);
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
+
 
 void _showConfirmationDialog(PetCareSupply supply, double quantityToAdd) {
   showDialog(

@@ -110,61 +110,82 @@ class _AddItemsToBoxPageState extends State<AddItemsToBoxPage> {
     }
   }
 
-Future<Map<String, dynamic>?> _requestCustomWeightAndTranslation() async {
-  double? customWeight;
-  String? ukTranslation;
+Future<Map<String, dynamic>?> _requestCustomWeightAndTranslation(String? supplyType) async {
+  TextEditingController weightController = TextEditingController();
+  TextEditingController translationController = TextEditingController();
+  bool isTranslationRequired = supplyType == null || supplyType == "Medical" || supplyType == "Care products";
 
-  await showDialog(
+  // Initializing the error message as null, meaning no error initially.
+  String? errorMessage;
+
+  final result = await showDialog<Map<String, dynamic>?>(
     context: context,
     builder: (BuildContext context) {
-      TextEditingController weightController = TextEditingController();
-      TextEditingController translationController = TextEditingController();
+      return StatefulBuilder(  // Enables updating the dialog's state.
+        builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: const Text('Enter Custom Weight and Translation'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: weightController,
+                    autofocus: true,
+                    decoration: const InputDecoration(hintText: 'Weight (kg)'),
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  ),
+                  TextField(
+                    controller: translationController,
+                    decoration: InputDecoration(
+                      hintText: isTranslationRequired ? 'Ukrainian Translation (Required)' : 'Ukrainian Translation (Optional)',
+                      labelText: isTranslationRequired ? 'Ukrainian Translation (Required)' : 'Ukrainian Translation (Optional)',
+                    ),
+                  ),
+                  if (errorMessage != null) // Display error message if it's set.
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(errorMessage!, style: TextStyle(color: Colors.red, fontSize: 14)),
+                    ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () {
+                  double weight = double.tryParse(weightController.text.replaceAll(',', '.')) ?? 0.0;
+                  weight = weight < 0.01 ? 0.01 : weight;
+                  String? translation = translationController.text;
 
-      return AlertDialog(
-        title: const Text('Enter Custom Weight and Translation'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min, // To prevent AlertDialog from occupying full screen height
-          children: [
-            TextField(
-              controller: weightController,
-              autofocus: true,
-              decoration: const InputDecoration(hintText: 'Weight (kg)'),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              onChanged: (value) {
-                String input = value.replaceAll(',', '.');
-                customWeight = double.tryParse(input);
-              },
-            ),
-            TextField(
-              controller: translationController,
-              decoration: const InputDecoration(hintText: 'Ukrainian Translation (optional)'),
-              onChanged: (value) {
-                ukTranslation = value;
-                
-              },
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text('OK'),
-            onPressed: () {
-              Navigator.of(context).pop({'weight': customWeight, 'translation': ukTranslation});
-            },
-          ),
-        ],
+                  if (isTranslationRequired && translation.isEmpty) {
+                    // If translation is required but not provided, update the error message and don't close the dialog.
+                    setState(() => errorMessage = 'Ukrainian translation is required.');
+                  } else {
+                    // If all required inputs are provided, close the dialog and return the values.
+                    Navigator.of(context).pop({'weight': weight, 'translation': translation});
+                  }
+                },
+              ),
+            ],
+          );
+        },
       );
     },
   );
 
-  return {'weight': customWeight, 'translation': ukTranslation};
+  // After the dialog is dismissed or closed, check the result.
+  if (result == null) {
+    return null; // If result is null (dialog was canceled or dismissed), indicate no action should be taken.
+  } else {
+    return result; // If OK was pressed and the dialog was closed with data, return that data.
+  }
 }
+
 
 
 
@@ -232,7 +253,7 @@ void _addItemToBoxAndDecrementCount(PetCareSupply supply, double quantityToAdd) 
   // Check if the supply item is generic
   if (supply.isGeneric) {
     // Request custom weight and Ukrainian translation from the user
-    Map<String, dynamic>? result = await _requestCustomWeightAndTranslation();
+    Map<String, dynamic>? result = await _requestCustomWeightAndTranslation(supply.supplyType);
     
     // Check if result is not null and customWeight is valid
     if (result != null && result['weight'] != null && result['weight'] > 0) {
@@ -240,6 +261,7 @@ void _addItemToBoxAndDecrementCount(PetCareSupply supply, double quantityToAdd) 
       String? ukTranslation = result['translation']; // May be null if the user did not enter a translation
       
       // Adjust the box item with the custom weight and optional Ukrainian translation
+      customWeight = customWeight < 0.01 ? 0.01 : customWeight;
       BoxItem boxItem = BoxItem.fromPetCareSupplyWithCustomWeight(supply, widget.boxId, quantityToAdd, customWeight, ukTranslation);
       _addBoxItemWithCustomWeight(boxItem, supply.id, quantityToAdd);
     } else {

@@ -36,7 +36,7 @@ class _BoxItemDetailsModalContentState
         TextEditingController(text: widget.item.basicWeight.toStringAsFixed(2));
     _ukTranslationController = TextEditingController(
         text: widget.item.ukTranslation ??
-            ""); // Initialize with existing translation, if any
+            ""); 
   }
 
   @override
@@ -49,74 +49,78 @@ class _BoxItemDetailsModalContentState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        top: 16,
-        left: 16,
-        right: 16,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      child: Wrap(
-        children: [
-          Center(child: _buildModalHandle()),
-          const SizedBox(height: 8),
-          Text(widget.item.name,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge!
-                  .copyWith(fontWeight: FontWeight.bold)),
-          TextFormField(
-            controller: _countController,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Count'),
-            inputFormatters: [_decimalInputFormatter], // Add this line
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: Container(
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
-          TextFormField(
-            controller: _weightController,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(labelText: 'Weight (kg)'),
-            inputFormatters: [_decimalInputFormatter], // And here
-          ),
-          TextFormField(
-            controller: _ukTranslationController,
-            decoration: const InputDecoration(
-                labelText: 'Custom ukrainian translation'),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildDetailRow('Barcode:', widget.item.barcode ?? 'N/A'),
-              _buildDetailRow(
-                  'Manufacturer:', widget.item.manufacturer ?? 'N/A'),
-              _buildDetailRow('For Whom:', widget.item.forWhom ?? 'N/A'),
-              _buildDetailRow('Supply Type:', widget.item.supplyType ?? 'N/A'),
-              _buildDetailRow('Food Type:', widget.item.foodType ?? 'N/A'),
-              _buildDetailRow('Packaging:', widget.item.packaging ?? 'N/A'),
-              // Add any other details you wish to display
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildModalHandle(),
+              SizedBox(height: 8),
+              Text(
+                widget.item.name,
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              _textField("Count", _countController, _decimalInputFormatter),
+              _textField("Weight (kg)", _weightController, _decimalInputFormatter),
+              TextFormField(
+                controller: _ukTranslationController,
+                decoration: InputDecoration(labelText: 'Custom Ukrainian translation'),
+              ),
+              ExpansionTile(
+                title: Text('Extra Info', style: TextStyle(fontWeight: FontWeight.bold)),
+                children: [
+                  _buildDetailRow('Barcode:', widget.item.barcode ?? 'N/A'),
+                  _buildDetailRow('Manufacturer:', widget.item.manufacturer ?? 'N/A'),
+                  _buildDetailRow('For Whom:', widget.item.forWhom ?? 'N/A'),
+                  _buildDetailRow('Supply Type:', widget.item.supplyType ?? 'N/A'),
+                  _buildDetailRow('Food Type:', widget.item.foodType ?? 'N/A'),
+                  _buildDetailRow('Packaging:', widget.item.packaging ?? 'N/A'),
+                ],
+              ),
+              ElevatedButton(
+                onPressed: _handleSave,
+                child: Text('Save'),
+              ),
             ],
           ),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                final double count = double.tryParse(
-                        _countController.text.replaceAll(',', '.')) ??
-                    widget.item.count;
-                final double weight = double.tryParse(
-                        _weightController.text.replaceAll(',', '.')) ??
-                    widget.item.basicWeight;
-                final String ukTranslation = _ukTranslationController.text;
-                widget.onSave(count, weight,
-                    ukTranslation); // Pass the updated values back
-                Navigator.pop(context); // Close the modal
-              },
-              child: const Text('Save Changes'),
-            ),
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+
+    Widget _detailsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _buildDetailRow('Barcode:', widget.item.barcode ?? 'N/A'),
+        _buildDetailRow('Manufacturer:', widget.item.manufacturer ?? 'N/A'),
+        _buildDetailRow('For Whom:', widget.item.forWhom ?? 'N/A'),
+        _buildDetailRow('Supply Type:', widget.item.supplyType ?? 'N/A'),
+        _buildDetailRow('Food Type:', widget.item.foodType ?? 'N/A'),
+        _buildDetailRow('Packaging:', widget.item.packaging ?? 'N/A'),
+      ],
+    );
+  }
+
+    Widget _textField(String label, TextEditingController controller, TextInputFormatter formatter) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.numberWithOptions(decimal: true),
+        decoration: InputDecoration(labelText: label),
+        inputFormatters: [formatter],
       ),
     );
   }
@@ -174,5 +178,13 @@ class _BoxItemDetailsModalContentState
         borderRadius: BorderRadius.circular(10),
       ),
     );
+  }
+
+    void _handleSave() {
+    final double count = double.tryParse(_countController.text.replaceAll(',', '.')) ?? widget.item.count;
+    final double weight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? widget.item.basicWeight;
+    final String ukTranslation = _ukTranslationController.text;
+    widget.onSave(count, weight, ukTranslation);
+    Navigator.pop(context);
   }
 }
