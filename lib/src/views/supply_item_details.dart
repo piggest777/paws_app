@@ -132,6 +132,7 @@ Future<void> _navigateAndEditSupply(BuildContext context) async {
               key: ValueKey(counterValue), // Add this line
               initialValue: counterValue, 
               onSave: _onSave,
+              supply: widget.supplyItem,
             ),
               
             ],

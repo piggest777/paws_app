@@ -9,8 +9,8 @@ import 'package:universal_html/html.dart' as html;
 
 class ActPdfCreator {
   static Future<File> createBoxItemsPdf({
-    required String organizationName,
-    required String organizationNumber,
+    required String? organizationName,
+    required String? organizationNumber,
     required String? recipientOrganizationName,
     required String recipientName,
     required String? recipientNumber,
@@ -61,7 +61,7 @@ class ActPdfCreator {
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
               pw.Text(
-                'Благодійник:\n$organizationName ЄДРПОУ $organizationNumber\nу співпраці з організацією, «PAWS OF PEACE», Швеція\n',
+                'Благодійник:\n${organizationName ?? "_______________________________________________________"} ЄДРПОУ ${organizationNumber ?? "________"}\nу співпраці з організацією, «PAWS OF PEACE», Швеція\n',
                 style:
                     pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
               ),

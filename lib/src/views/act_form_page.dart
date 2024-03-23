@@ -1,11 +1,16 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:paws_app/src/models/act_information.dart';
 import 'package:paws_app/src/models/act_item.dart';
 import 'package:paws_app/src/models/person.dart';
 import 'package:paws_app/src/services/act_pdf_creator.dart';
+import 'package:paws_app/src/services/firebase_service.dart';
+import 'package:paws_app/src/views/fond_input_view.dart';
 import 'package:paws_app/src/views/view_components/pdf_preview.dart';
+
+import '../models/fond.dart';
 
 
 class ActFormPage extends StatefulWidget {
@@ -25,7 +30,10 @@ class _ActFormPageState extends State<ActFormPage> {
   final _formKey = GlobalKey<FormState>();
   final ActInformation _actInformation = ActInformation(); 
   late List<ActItem> adjustedItems;
-  double totalAdjustedWeight = 0.0; 
+  double totalAdjustedWeight = 0.0;
+  Fond? _selectedFond; 
+  Fond noneFond = Fond(name: "None", fondNumber: '');
+  List<Fond> _fondsList = [];
 
     // Declare TextEditingControllers for each form field
   late TextEditingController _recipientOrganizationNameController;
@@ -50,6 +58,7 @@ class _ActFormPageState extends State<ActFormPage> {
 
     adjustedItems = _adjustItemsWithBoxWeight(widget.items, widget.boxWeight);
     _calculateTotalAdjustedWeight();
+    _fetchFonds();
   }
 
 List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
@@ -90,6 +99,16 @@ List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
     });
   }
 
+  
+
+void _fetchFonds() async {
+  List<Fond> fondsFromFirebase = await FirebaseService().getFonds();
+  setState(() {
+    _fondsList = [noneFond] + fondsFromFirebase; // Add "None" option at the beginning
+    _selectedFond = _fondsList.first; // Default to "None"
+  });
+}
+
 
     @override
   void dispose() {
@@ -107,6 +126,15 @@ List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fill Act Information'),
+        actions: <Widget>[
+          IconButton(onPressed: () => {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => FondInputView())
+                )
+          },
+           icon: Icon(Symbols.source_environment))
+        ],
       ),
       body: Form(
         key: _formKey,
@@ -114,20 +142,21 @@ List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              TextFormField(
-                initialValue: _actInformation.reciverFondName,
-                decoration: const InputDecoration(labelText: 'Receiver Fond Name'),
-                onSaved: (value) {
-                  _actInformation.reciverFondName = value ?? '';
-                },
-              ),
-              TextFormField(
-                initialValue: _actInformation.reciverFondNumber,
-                decoration: const InputDecoration(labelText: 'Receiver Fond Number'),
-                onSaved: (value) {
-                  _actInformation.reciverFondNumber = value ?? '';
-                },
-              ),
+DropdownButtonFormField<Fond>(
+  value: _selectedFond,
+  decoration: InputDecoration(labelText: 'Select Fond'),
+  onChanged: (Fond? newValue) {
+    setState(() {
+      _selectedFond = newValue;
+    });
+  },
+  items: _fondsList.map<DropdownMenuItem<Fond>>((Fond value) {
+    return DropdownMenuItem<Fond>(
+      value: value,
+      child: Text(value.name),
+    );
+  }).toList(),
+),
               TextFormField(
                 controller: _recipientOrganizationNameController,
                 decoration: const InputDecoration(labelText: 'Recipient organisation'),
@@ -252,10 +281,21 @@ void _submitForm() async {
   if (_formKey.currentState!.validate()) {
     _formKey.currentState!.save();
 
+        if (_selectedFond != noneFond && _selectedFond != null) {
+      // Process the selected fond
+      _actInformation.reciverFondName = _selectedFond!.name;
+      _actInformation.reciverFondNumber = _selectedFond!.fondNumber;
+    } else if (_selectedFond == noneFond || _selectedFond == null){
+      // Handle the case where "None" is selected
+      _actInformation.reciverFondName = '';
+      _actInformation.reciverFondNumber = '';
+    }
+
+
     // Generate PDF
     final pdfFile = await ActPdfCreator.createBoxItemsPdf(
-      organizationName: _actInformation.reciverFondName,
-      organizationNumber: _actInformation.reciverFondNumber,
+      organizationName: _actInformation.reciverFondName.isEmpty ? null : _actInformation.reciverFondName,
+      organizationNumber: _actInformation.reciverFondNumber.isEmpty ? null : _actInformation.reciverFondNumber,
       recipientOrganizationName: _actInformation.recipientOrganizationName.isEmpty ? null: _actInformation.recipientOrganizationName,
       recipientName: _actInformation.recipientName,
       recipientNumber: _actInformation.recipientNumber.isEmpty ? null : _actInformation.recipientNumber,

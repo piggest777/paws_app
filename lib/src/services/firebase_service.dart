@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paws_app/src/models/box_item.dart';
+import 'package:paws_app/src/models/fond.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
 
 class FirebaseService {
@@ -117,6 +118,27 @@ class FirebaseService {
       print("Error decrementing supply item count: $error");
       throw error; // Rethrow or handle as needed
     });
+  }
+
+//fonds
+    Future<void> saveFond(Fond fond) async {
+    await _firestore.collection('fonds').add(fond.toMap());
+  }
+
+  Future<List<Fond>> getFonds() async {
+    try {
+      var collection = _firestore.collection('fonds');
+      var querySnapshot = await collection.get();
+      var fonds = querySnapshot.docs.map((doc) {
+        // Use Fond.fromMap to create a new Fond instance
+        return Fond.fromMap(doc.data() as Map<String, dynamic>);
+      }).toList();
+      return fonds;
+    } catch (e) {
+      // Handle any errors appropriately
+      print(e.toString());
+      return [];
+    }
   }
 
 }

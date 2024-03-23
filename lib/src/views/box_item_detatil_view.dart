@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/box_item.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
@@ -15,16 +16,40 @@ class SupplyItemDetailView extends StatefulWidget {
 
 class _SupplyItemDetailViewState extends State<SupplyItemDetailView> {
   late TextEditingController _quantityController;
+  late TextEditingController _weightController;
+  bool _isUserInput = true; // Flag to prevent infinite loop of updates
 
-    @override
+  @override
   void initState() {
     super.initState();
-    _quantityController = TextEditingController(); 
+    _quantityController = TextEditingController();
+    _weightController = TextEditingController();
+
+    // Listener to update weight when quantity changes
+    _quantityController.addListener(() {
+      if (_isUserInput && !widget.supply.isGeneric) {
+        double quantity = double.tryParse(_quantityController.text.replaceAll(',', '.')) ?? 0;
+        _isUserInput = false; // Prevent triggering the weight listener
+        _weightController.text = (quantity * widget.supply.weight).toStringAsFixed(2);
+        _isUserInput = true;
+      }
+    });
+
+    // Listener to update quantity when weight changes
+    _weightController.addListener(() {
+      if (_isUserInput && !widget.supply.isGeneric) {
+        double weight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0;
+        _isUserInput = false; // Prevent triggering the quantity listener
+        _quantityController.text = (weight / widget.supply.weight).toStringAsFixed(2);
+        _isUserInput = true;
+      }
+    });
   }
 
   @override
   void dispose() {
     _quantityController.dispose();
+    _weightController.dispose();
     super.dispose();
   }
 
@@ -40,7 +65,7 @@ Widget build(BuildContext context) {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildQuantityInput(),
+            _buildQuantityAndWeightInput(),
             const SizedBox(height: 20),
             _buildBarcodeAndCount(),
             const SizedBox(height: 20),
@@ -133,27 +158,110 @@ Widget _buildBarcodeAndCount() {
 }
 
 Widget _buildQuantityInput() {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Container(
-        width: 200, // Limiting the width for better UX
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: TextField(
-          controller: _quantityController,
-          decoration: InputDecoration(
-            labelText: 'Quantity',
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.clear),
-              onPressed: _quantityController.clear,
-            ),
-            border: const OutlineInputBorder(),
-            isDense: true, // Reduces padding and height
-          ),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+  // Your existing method for building the quantity input
+  return Container(
+    width: 200, // Ensure this width is the same for both inputs for consistency
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: TextField(
+      controller: _quantityController,
+      decoration: InputDecoration(
+        labelText: 'Quantity',
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: _quantityController.clear,
         ),
+        border: const OutlineInputBorder(),
+        isDense: true, // Reduces padding and height
       ),
-    ],
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+    ),
+  );
+}
+
+Widget _buildQuantityAndWeightInput() {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      // Determine if the layout is for mobile or web/desktop based on the constraints
+      bool isMobile = constraints.maxWidth < 600; // You can adjust this breakpoint
+
+      Widget quantityInput = _buildInputField(
+        controller: _quantityController,
+        label: 'Quantity',
+      );
+
+      Widget weightInput = _buildInputField(
+        controller: _weightController,
+        label: 'Weight (kg)',
+      );
+
+      // For mobile, we'll center the inputs vertically and remove the "OR" divider
+      if (isMobile) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(child: quantityInput), // Centered horizontally
+            const SizedBox(height: 20), // Space between the inputs for better UX
+            if (!widget.supply.isGeneric) Center(child: weightInput), // Conditionally add weight input
+          ],
+        );
+      } else {
+        // For web/desktop or larger screens, you can keep your previous layout
+        // This part can include the "OR" divider or any other layout adjustments needed for larger screens
+        Widget orDivider = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+          child: Text('OR', style: TextStyle(fontWeight: FontWeight.bold)),
+        );
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            quantityInput,
+            if (!widget.supply.isGeneric) ...[orDivider, weightInput], // Only add "OR" and weightInput for non-generic supplies
+          ],
+        );
+      }
+    },
+  );
+}
+
+Widget _buildInputField({required TextEditingController controller, required String label}) {
+  return Container(
+    width: 200, // Limit width
+    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+    child: TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: controller.clear,
+        ),
+        border: const OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+    ),
+  );
+}
+
+
+Widget _buildWeightInput() {
+  // Method to build the weight input, similar to _buildQuantityInput
+  return Container(
+    width: 200, // Matching the width with the quantity input
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: TextField(
+      controller: _weightController,
+      decoration: InputDecoration(
+        labelText: 'Weight (kg)',
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: _weightController.clear,
+        ),
+        border: const OutlineInputBorder(),
+        isDense: true, // Reduces padding and height
+      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+    ),
   );
 }
 
