@@ -4,7 +4,7 @@ import 'package:paws_app/src/models/box_item.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
 import 'package:paws_app/src/services/firebase_service.dart';
 import 'package:paws_app/src/views/barcode_scanner_page.dart';
-import 'package:paws_app/src/views/box_item_detatil_view.dart';
+import 'package:paws_app/src/views/boxes/box_item_detatil_view.dart';
 import 'package:paws_app/src/views/view_components/boxitem_list_item.dart';
 
 class AddItemsToBoxPage extends StatefulWidget {

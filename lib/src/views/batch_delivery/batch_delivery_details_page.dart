@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/box.dart';
 import 'package:paws_app/src/services/delivery_item_aggregator.dart';
 import 'package:paws_app/src/views/barcode_scanner_page.dart';
-import 'package:paws_app/src/views/csv_sharing_mobile.dart';
+import 'package:paws_app/src/views/batch_delivery/csv_sharing_mobile.dart';
 import 'package:paws_app/src/views/view_components/box_card_delivery.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';

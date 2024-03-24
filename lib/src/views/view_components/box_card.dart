@@ -3,7 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart'; // Import this package for date formatting
 import 'package:paws_app/src/models/box.dart';
 import 'package:paws_app/src/utils/box_status_util.dart';
-import 'package:paws_app/src/views/box_detail_page.dart';
+import 'package:paws_app/src/views/boxes/box_detail_page.dart';
 
 class BoxCard extends StatelessWidget {
   final Box box;

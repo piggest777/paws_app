@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:paws_app/src/models/batch_delivery.dart';
-import 'package:paws_app/src/views/batch_delivery_details_page.dart';
+import 'package:paws_app/src/views/batch_delivery/batch_delivery_details_page.dart';
 
 class BatchDeliveryCard extends StatelessWidget {
   final BatchDelivery delivery;

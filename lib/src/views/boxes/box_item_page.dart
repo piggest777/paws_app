@@ -4,8 +4,8 @@ import 'package:paws_app/src/models/box_item.dart';
 import 'package:paws_app/src/models/person.dart';
 import 'package:paws_app/src/services/box_item_service.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:paws_app/src/views/act_form_page.dart';
-import 'package:paws_app/src/views/add_item_to_box_page.dart';
+import 'package:paws_app/src/views/boxes/act_form_page.dart';
+import 'package:paws_app/src/views/boxes/add_item_to_box_page.dart';
 import 'package:paws_app/src/views/view_components/box_item_card.dart';
 import 'package:paws_app/src/views/view_components/box_items_detail_modal.dart';
 

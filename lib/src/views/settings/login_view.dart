@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'view_components/google_signin_button.dart';
+import '../view_components/google_signin_button.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});

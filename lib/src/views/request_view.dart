@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:paws_app/src/services/group_state.dart';
 import 'package:paws_app/src/views/barcode_scanner_page.dart';
-import 'package:paws_app/src/views/box_detail_page.dart';
-import 'package:paws_app/src/views/boxes_page.dart';
+import 'package:paws_app/src/views/boxes/box_detail_page.dart';
+import 'package:paws_app/src/views/boxes/boxes_page.dart';
 import 'package:paws_app/src/views/search_person_page.dart';
-import 'package:paws_app/src/views/settings_page.dart';
+import 'package:paws_app/src/views/settings/settings_page.dart';
 import 'package:paws_app/src/views/view_components/request_card.dart';
 import 'package:provider/provider.dart';
 

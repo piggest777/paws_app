@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
-import 'package:paws_app/src/views/edit_supply_page.dart';
+import 'package:paws_app/src/views/storage/edit_supply_page.dart';
 import 'package:paws_app/src/views/view_components/barcode_view.dart';
 import 'package:paws_app/src/views/view_components/counter_widget.dart';
 

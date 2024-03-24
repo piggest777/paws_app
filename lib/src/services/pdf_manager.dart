@@ -1,3 +1,4 @@
+import 'package:paws_app/src/models/fond.dart';
 import 'package:paws_app/src/models/person.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:qr_flutter/qr_flutter.dart';
@@ -17,8 +18,9 @@ class PDFManager {
   final Box? box;
   final String? organizationName;
   final Person? person;
+  final Fond? fond;
 
-  PDFManager({this.box, this.organizationName, this.person});
+  PDFManager({this.box, this.organizationName, this.person, this.fond});
 
   Future<void> createAndSharePdf() async {
     // final pdf = pw.Document();
@@ -96,6 +98,14 @@ class PDFManager {
                           ),
                     ),
                     pw.SizedBox(height: 5),
+                    pw.Text(
+                      '(ВИДАЧА ПІСЛЯ ПІДПИСАННЯ ДОКУМЕНТІВ)',
+                      style: pw.TextStyle(
+                          font: ttfBold,
+                          fontSize: 20,
+                          ),
+                    ),
+                    pw.SizedBox(height: 5),
                     if (organizationName != null &&
                         organizationName!.isNotEmpty)
                       pw.Text(
@@ -136,11 +146,11 @@ class PDFManager {
                           ),
                     ),
                     pw.Text(
-                      'ГО “Захист прав тварин “ДОБЕРМАН” Невмержицька Оксана',
+                      fond?.name ?? '',
                       style: pw.TextStyle(font: ttf, fontSize: 16),
                     ),
                     pw.Text(
-                      'Теплодар,Одеська обл., НП 1, +380974649772',
+                      fond?.address ?? '',
                       style: pw.TextStyle(font: ttf, fontSize: 16),
                     ),
                   ],

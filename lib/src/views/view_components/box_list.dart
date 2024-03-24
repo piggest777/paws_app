@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/request.dart';
-import 'package:paws_app/src/views/box_detail_page.dart';
+import 'package:paws_app/src/views/boxes/box_detail_page.dart';
 
 import '../../models/box.dart';
 

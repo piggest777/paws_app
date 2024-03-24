@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/box.dart';
+import 'package:paws_app/src/models/fond.dart';
 import 'package:paws_app/src/models/person.dart';
 import 'package:paws_app/src/models/request.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:paws_app/src/services/firebase_service.dart';
 import 'package:paws_app/src/services/pdf_manager.dart';
 import 'package:paws_app/src/utils/box_status_util.dart';
-import 'package:paws_app/src/views/box_item_page.dart';
+import 'package:paws_app/src/views/boxes/box_item_page.dart';
+import 'package:paws_app/src/views/boxes/fond_input_view.dart';
 import 'package:paws_app/src/views/request_detatil_page.dart';
 import 'package:paws_app/src/views/view_components/box_weight.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -38,6 +41,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
   String? requestName;
   Person? person;
   String? organizationName;
+  Fond? selectedFond;
 
   @override
   void dispose() {
@@ -281,7 +285,7 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
                       children: [
                         const SizedBox(height: 10),
                         ElevatedButton(
-                          onPressed: _createAndSharePdf,
+                          onPressed: () => _showFondSelectionModal(context),
                           child: const Text('Create and Share PDF'),
                         ),
                         const SizedBox(height: 10),
@@ -329,15 +333,121 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     }
   }
 
+void _showFondSelectionModal(BuildContext context) async {
+  final List<Fond> fonds = await FirebaseService().getFonds();
+  
+  showModalBottomSheet(
+    context: context,
+    builder: (BuildContext context) {
+      return ListView.builder(
+        itemCount: fonds.length + 1,
+        itemBuilder: (context, index) {
+          if (index == fonds.length) {
+            return ListTile(
+              leading: Icon(Icons.add),
+              title: Text('Add New Fond'),
+              onTap: () async {
+                Navigator.pop(context); // Ensure to close the current modal first
+                // Navigate to a new screen for adding a fond instead of opening a modal
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FondInputView()), // Placeholder for your add new fond screen
+                );
+                
+                // Optional: Check the result if needed and refresh fonds list
+                if (result == true) {
+                  // Refresh your fonds list or perform any other actions as needed
+                }
+              },
+            );
+          } else {
+            return ListTile(
+              title: Text(fonds[index].name),
+              onTap: () {
+                setState(() {
+                  selectedFond = fonds[index];
+                });
+                Navigator.pop(context); // Close the modal after selection
+                _createAndSharePdf(); // Proceed to create and share PDF
+              },
+            );
+          }
+        },
+      );
+    },
+  );
+}
+
+
+
   void _createAndSharePdf() async {
-    if (widget.box?.id != null || boxId != null) {
-      PDFManager pdfManager =
-          PDFManager(box: box, organizationName: organizationName, person: person);
+    if (selectedFond != null) {
+      PDFManager pdfManager = PDFManager(
+        box: box,
+        organizationName: organizationName,
+        person: person,
+        fond: selectedFond,
+      );
       pdfManager.createAndSharePdf();
     } else {
-      print("can't create pdf without box id");
+      print("Can't create PDF without fond selection.");
     }
   }
+
+Future<void> _handleNewFondAddition(BuildContext context) async {
+  TextEditingController nameController = TextEditingController();
+  TextEditingController numberController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+
+  // Use showModalBottomSheet directly without wrapping in an async function
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true, // Allow the modal to be scrollable to accommodate the keyboard
+    builder: (BuildContext context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          top: 20,
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20, // Adjust for keyboard
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Fit content in the viewport
+          children: <Widget>[
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: 'Fond Name'),
+            ),
+            TextField(
+              controller: numberController,
+              decoration: InputDecoration(labelText: 'Fond Number'),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: addressController,
+              decoration: InputDecoration(labelText: 'Address'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              child: Text('Add Fond'),
+              onPressed: () async {
+                // Construct the new Fond object
+                Fond newFond = Fond(
+                  name: nameController.text,
+                  fondNumber: numberController.text,
+                  address: addressController.text,
+                );
+                // Save the new fond to Firebase
+                await FirebaseService().saveFond(newFond); // Ensure this method is defined to handle asynchronous operations
+                Navigator.pop(context); // Close the modal after saving
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildQRCode(String data) {
     return Center(
@@ -812,69 +922,70 @@ class _BoxDetailsPageState extends State<BoxDetailsPage> {
     );
   }
 
-Future<void> _deleteBox() async {
-  if (box?.id == null || (!box!.isDirectToPerson && box?.requestId == null)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Error: Box ID is not available or Box is not linked to a direct request'),
-        backgroundColor: Colors.red,
-      ),
-    );
-    return;
-  }
-
-  FirebaseFirestore.instance.runTransaction((transaction) async {
-    if (!box!.isDirectToPerson) {
-      final DocumentReference requestDocRef =
-          FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
-
-      // Fetch the current request document
-      final DocumentSnapshot requestSnapshot =
-          await transaction.get(requestDocRef);
-
-      if (!requestSnapshot.exists) {
-        throw Exception('Request does not exist!');
-      }
-
-      // Get the current box status counts
-      final Map<String, dynamic> requestData =
-          requestSnapshot.data() as Map<String, dynamic>;
-      final Map<String, dynamic> boxStatusCounts =
-          requestData['boxStatusCounts'] as Map<String, dynamic>? ?? {};
-
-      // Decrease the count for the box's status
-      final String statusKey = _trimEnumName(box!.status.toString());
-      final int currentCount = boxStatusCounts[statusKey] ?? 0;
-      boxStatusCounts[statusKey] = currentCount > 0 ? currentCount - 1 : 0;
-
-      // Update the request document with the new box status counts
-      transaction.update(requestDocRef, {'boxStatusCounts': boxStatusCounts});
+  Future<void> _deleteBox() async {
+    if (box?.id == null || (!box!.isDirectToPerson && box?.requestId == null)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Error: Box ID is not available or Box is not linked to a direct request'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
     }
 
-    // Archive the box document
-    final DocumentReference boxDocRef =
-        FirebaseFirestore.instance.collection('boxes').doc(box!.id);
-    transaction.update(boxDocRef, {'archived': true});
-  }).then((_) {
-    // Navigate back after successful update
-    Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Box archived successfully'),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }).catchError((error) {
-    // Handle any errors here
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Error archiving box: $error'),
-        backgroundColor: Colors.red,
-      ),
-    );
-  });
-}
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      if (!box!.isDirectToPerson) {
+        final DocumentReference requestDocRef = FirebaseFirestore.instance
+            .collection('requests')
+            .doc(box!.requestId);
 
+        // Fetch the current request document
+        final DocumentSnapshot requestSnapshot =
+            await transaction.get(requestDocRef);
+
+        if (!requestSnapshot.exists) {
+          throw Exception('Request does not exist!');
+        }
+
+        // Get the current box status counts
+        final Map<String, dynamic> requestData =
+            requestSnapshot.data() as Map<String, dynamic>;
+        final Map<String, dynamic> boxStatusCounts =
+            requestData['boxStatusCounts'] as Map<String, dynamic>? ?? {};
+
+        // Decrease the count for the box's status
+        final String statusKey = _trimEnumName(box!.status.toString());
+        final int currentCount = boxStatusCounts[statusKey] ?? 0;
+        boxStatusCounts[statusKey] = currentCount > 0 ? currentCount - 1 : 0;
+
+        // Update the request document with the new box status counts
+        transaction.update(requestDocRef, {'boxStatusCounts': boxStatusCounts});
+      }
+
+      // Archive the box document
+      final DocumentReference boxDocRef =
+          FirebaseFirestore.instance.collection('boxes').doc(box!.id);
+      transaction.update(boxDocRef, {'archived': true});
+    }).then((_) {
+      // Navigate back after successful update
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Box archived successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }).catchError((error) {
+      // Handle any errors here
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error archiving box: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    });
+  }
 
   void _showDeleteConfirmationDialog() {
     showDialog(

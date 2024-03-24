@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/services/firebase_service.dart';
-import '../models/fond.dart';
+import '../../models/fond.dart';
 
 class FondInputView extends StatefulWidget {
   @override
@@ -12,12 +12,13 @@ class _FondInputViewState extends State<FondInputView> {
   final _firebaseService = FirebaseService();
   String _name = '';
   String _fondNumber = '';
+  String _address = ''; // Add an address string
   bool _isLoading = false; // Track loading state
 
   void _saveFond() async {
     setState(() => _isLoading = true); // Start loading
     _formKey.currentState!.save();
-    Fond newFond = Fond(name: _name, fondNumber: _fondNumber);
+    Fond newFond = Fond(name: _name, fondNumber: _fondNumber, address: _address); 
 
     try {
       await _firebaseService.saveFond(newFond);
@@ -25,7 +26,6 @@ class _FondInputViewState extends State<FondInputView> {
       Navigator.of(context).pop(); // Navigate back
     } catch (e) {
       // Handle errors if any
-      // For example, show a Snackbar with an error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to save fond. Please try again.')),
       );
@@ -55,6 +55,13 @@ class _FondInputViewState extends State<FondInputView> {
                 keyboardType: TextInputType.number,
                 onSaved: (value) => _fondNumber = value!,
               ),
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Address',
+                  hintText: 'Examle: "Теплодар,Одеська обл., НП 1, +380974649772"', // Example format
+                ),
+                onSaved: (value) => _address = value!,
+              ),
               SizedBox(height: 20,),
               ElevatedButton(
                 child: _isLoading ? CircularProgressIndicator(color: Colors.white) : Text('Save'),
@@ -67,4 +74,5 @@ class _FondInputViewState extends State<FondInputView> {
     );
   }
 }
+
 

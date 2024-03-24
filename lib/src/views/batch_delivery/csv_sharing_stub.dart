@@ -1,4 +1,4 @@
-import 'package:paws_app/src/views/csv_sharing_interface.dart';
+import 'package:paws_app/src/views/batch_delivery/csv_sharing_interface.dart';
 
 import 'csv_sharing.dart';
 

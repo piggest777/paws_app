@@ -7,10 +7,10 @@ import 'package:paws_app/src/models/act_item.dart';
 import 'package:paws_app/src/models/person.dart';
 import 'package:paws_app/src/services/act_pdf_creator.dart';
 import 'package:paws_app/src/services/firebase_service.dart';
-import 'package:paws_app/src/views/fond_input_view.dart';
+import 'package:paws_app/src/views/boxes/fond_input_view.dart';
 import 'package:paws_app/src/views/view_components/pdf_preview.dart';
 
-import '../models/fond.dart';
+import '../../models/fond.dart';
 
 
 class ActFormPage extends StatefulWidget {
@@ -32,7 +32,7 @@ class _ActFormPageState extends State<ActFormPage> {
   late List<ActItem> adjustedItems;
   double totalAdjustedWeight = 0.0;
   Fond? _selectedFond; 
-  Fond noneFond = Fond(name: "None", fondNumber: '');
+  Fond noneFond = Fond(name: "None", fondNumber: '', address: '');
   List<Fond> _fondsList = [];
 
     // Declare TextEditingControllers for each form field

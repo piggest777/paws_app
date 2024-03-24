@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/box.dart';
-import 'package:paws_app/src/views/box_detail_page.dart';
+import 'package:paws_app/src/views/boxes/box_detail_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BoxCardDelivery extends StatelessWidget {

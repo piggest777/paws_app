@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
 // import 'package:paws_app/src/services/admin_service.dart';
-import 'package:paws_app/src/views/add_supply_page.dart';
-import 'package:paws_app/src/views/scan_supply_page.dart';
-import 'package:paws_app/src/views/supply_item_details.dart';
+import 'package:paws_app/src/views/storage/add_supply_page.dart';
+import 'package:paws_app/src/views/storage/scan_supply_page.dart';
+import 'package:paws_app/src/views/storage/supply_item_details.dart';
 import 'package:paws_app/src/views/view_components/pet_supply_list_item.dart';
 
 class StoragePage extends StatefulWidget {

@@ -5,10 +5,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/rendering.dart';
 import 'package:paws_app/src/services/group_state.dart';
 import 'package:paws_app/src/utils/dropdown_list_provider.dart';
-import 'package:paws_app/src/views/login_view.dart';
+import 'package:paws_app/src/views/settings/login_view.dart';
 import 'package:paws_app/src/views/request_view.dart';
-import 'package:paws_app/src/views/send_manager_page.dart';
-import 'package:paws_app/src/views/storage_page.dart';
+import 'package:paws_app/src/views/batch_delivery/send_manager_page.dart';
+import 'package:paws_app/src/views/storage/storage_page.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 

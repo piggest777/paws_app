@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/box_item.dart';
 import 'package:paws_app/src/services/box_item_service.dart';
-import 'package:paws_app/src/views/box_item_modal_details_content.dart';
+import 'package:paws_app/src/views/boxes/box_item_modal_details_content.dart';
 
 class BoxItemDetailsModal {
   final BoxItem item;

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
-import 'package:paws_app/src/views/add_supply_page.dart';
+import 'package:paws_app/src/views/storage/add_supply_page.dart';
 import 'package:paws_app/src/views/barcode_scanner_page.dart';
-import 'package:paws_app/src/views/supply_item_details.dart';
+import 'package:paws_app/src/views/storage/supply_item_details.dart';
 import 'package:paws_app/src/views/view_components/pet_supply_list_item.dart'; // Import the PetCareSupply class
 
 class ScanBarcodePage extends StatefulWidget {
