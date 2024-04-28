@@ -166,6 +166,8 @@ Widget _statusIcon(String status) {
   Color _determineCardColor() {
     if (request.isUrgent) {
       return Colors.red.shade50;
+    } else if (request.isMedical ?? false) {
+    return Colors.lightBlue.shade100; 
     } else if (request.isRepeat) {
       return Colors.grey.shade300;
     } else {

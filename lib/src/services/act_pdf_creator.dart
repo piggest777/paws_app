@@ -143,7 +143,7 @@ class ActPdfCreator {
           pw.SizedBox(height: 10),
           pw.Paragraph(
               text:
-                  'Всього: $totalPackages пакунок вагою ${totalWeight.toStringAsFixed(2)} кг',
+                  'Всього: ${totalPackages.toStringAsFixed(2)} пакунок вагою ${totalWeight.toStringAsFixed(2)} кг',
               style: const pw.TextStyle(fontSize: 12)),
           pw.Paragraph(
               text:
@@ -229,7 +229,7 @@ class ActPdfCreator {
                   alignment: pw.Alignment.centerLeft),
               _buildCell(item.units, context, alignment: pw.Alignment.center),
               _buildCell(item.packing, context, alignment: pw.Alignment.center),
-              _buildCell(item.quantity.toString(), context,
+              _buildCell(item.quantity.toStringAsFixed(2), context,
                   alignment: pw.Alignment.center),
               _buildCell("${item.nettoWeight.toStringAsFixed(2)} kg", context,
                   alignment: pw.Alignment.centerRight),

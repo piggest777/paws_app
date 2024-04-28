@@ -92,7 +92,10 @@ Future<void> _createNewBatchDelivery(BuildContext context) async {
   Widget buildBatchDeliveryList(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream:
-          FirebaseFirestore.instance.collection('batchDeliveries').snapshots(),
+          FirebaseFirestore.instance
+          .collection('batchDeliveries')
+          .orderBy('date', descending: true)
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();

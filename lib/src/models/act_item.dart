@@ -3,6 +3,7 @@ class ActItem {
   final String description;
   final String units;
   final String packing;
+  final String type;
   double quantity;
   double nettoWeight;
 
@@ -11,6 +12,7 @@ class ActItem {
     required this.description,
     required this.units,
     required this.packing,
+    required this.type,
     required this.quantity,
     required this.nettoWeight,
   });

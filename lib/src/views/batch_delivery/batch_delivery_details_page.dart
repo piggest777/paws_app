@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/box.dart';
 import 'package:paws_app/src/services/delivery_item_aggregator.dart';
+import 'package:paws_app/src/utils/box_status_util.dart';
 import 'package:paws_app/src/views/barcode_scanner_page.dart';
 import 'package:paws_app/src/views/batch_delivery/csv_sharing_mobile.dart';
 import 'package:paws_app/src/views/view_components/box_card_delivery.dart';
@@ -80,12 +81,13 @@ void _handleAggregateItems() async {
 
   String generateCsvContent(AggregationResult aggregationResult) {
     List<List<String>> rows = [
-      ["Description", "Quantity", "Units", "Total Weight"]
+      ["Description", "Supply type", "Quantity", "Units", "Total Weight"]
     ];
 
     aggregationResult.summary.forEach((description, summary) {
       rows.add([
         description,
+        summary.type,
         summary.quantity.toString(),
         summary.units,
         summary.totalWeight.toStringAsFixed(2)
@@ -111,38 +113,53 @@ void _handleAggregateItems() async {
     return file;
   }
 
-  void onBoxScanned(String scannedBoxId) async {
-    // Fetch the box document
-    var boxDocRef =
-        FirebaseFirestore.instance.collection('boxes').doc(scannedBoxId);
-    var boxSnapshot = await boxDocRef.get();
+void onBoxScanned(String scannedBoxId) async {
+  // Fetch the box document
+  var boxDocRef = FirebaseFirestore.instance.collection('boxes').doc(scannedBoxId);
+  var boxSnapshot = await boxDocRef.get();
 
-    if (boxSnapshot.exists) {
-      // Update the box status and send date
-      await boxDocRef.update({
-        'status': 'sended',
-        'sendingDate': FieldValue.serverTimestamp(),
-        'batchId': widget.batchDeliveryId, // Use server timestamp
-      });
+  if (boxSnapshot.exists) {
+    var boxData = boxSnapshot.data() as Map<String, dynamic>;
+    var box = Box.fromMap(boxData, boxSnapshot.id);
+    final boxOldStatus = box.status;
 
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Box $scannedBoxId marked as sent')),
-      );
+    // Update box counts in the request document
+    await BoxStatusUtil.updateBoxCountsInRequestDocument(
+      box,
+      BoxStatus.readyForShipment, // Assuming this is correctly defined in your enum
+      boxOldStatus
+    );
 
-      // Add the scanned box to the local list if necessary
-      var newBox = Box.fromMap(
-          boxSnapshot.data() as Map<String, dynamic>, boxSnapshot.id);
-      setState(() {
-        boxes.add(newBox); // Update the list and UI
-      });
-    } else {
-      // Handle the case where the box is not found
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Box not found with ID: $scannedBoxId')),
-      );
+    // Prepare the update data
+    Map<String, dynamic> updates = {
+      'status' : BoxStatusUtil.trimToLastElement(BoxStatus.readyForShipment),
+      'batchId': widget.batchDeliveryId, // This comment about server timestamp might be misleading here
+    };
+
+    // Conditionally add 'packingDate' if it does not exist
+    if (box.packingDate == null) {
+      updates['packingDate'] = FieldValue.serverTimestamp(); 
     }
+
+    // Update the box document with batch ID and possibly packing date
+    await boxDocRef.update(updates);
+
+    // Show a success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Box $scannedBoxId marked as ready for shipment')),
+    );
+
+    // Update the local UI list with the new box state
+    setState(() {
+      boxes.add(box); // Use the box object created from the snapshot
+    });
+  } else {
+    // Handle the case where the box is not found
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Box not found with ID: $scannedBoxId')),
+    );
   }
+}
 
   void shareCsvFile(File csvFile) {
     Share.shareXFiles([XFile(csvFile.path)], text: 'Items Summary');

@@ -4,9 +4,12 @@ import 'package:paws_app/src/services/box_item_service.dart';
 
 class ActItemConverter {
   static ActItem convertToActItem(BoxItem boxItem, int number) {
-    String description = BoxItemService.getDescription(boxItem);
+
+    String description = prepareDescription(boxItem);
+
     String units = "шт."; // Always 'шт.' according to your rules
     String packing = _getPacking(boxItem.supplyType, boxItem.packaging);
+    String type = boxItem.supplyType ?? '';
     double quantity = boxItem.count; // Default quantity is 1
     double nettoWeight = boxItem.basicWeight * quantity; // Net weight
 
@@ -15,10 +18,27 @@ class ActItemConverter {
       description: description,
       units: units,
       packing: packing,
+      type: type,
       quantity: quantity,
       nettoWeight: nettoWeight,
     );
   }
+
+static String prepareDescription(BoxItem item) {
+  final type = item.supplyType;
+  switch (type) {
+    case "Medical":
+      return BoxItemService.getDescription(item);
+    case "Care products":
+      if (type == "Harness" || type == "Nail clippers" || type == "Brushes" || type == "Shampoo") {
+        return BoxItemService.getItemTypeTranslation(type, null);
+      } else {
+        return BoxItemService.getDescription(item);
+      }
+    default: 
+      return BoxItemService.getItemTypeTranslation(type, item.foodType);
+  }
+}
 
   static String _getPacking(String? supplyType, String? packaging) {
     // Define the types for which the packaging is always "Виріб"

@@ -654,7 +654,7 @@ Future<void> _handleNewFondAddition(BuildContext context) async {
                       .map<DropdownMenuItem<BoxStatus>>((BoxStatus value) {
                     // Using the _getIconForStatus method to get the corresponding icon
                     Icon statusIcon = BoxStatusUtil.getIconForStatus(value);
-                    String statusText = _trimEnumName(value.toString());
+                    String statusText = BoxStatusUtil.getDescriptionForStatus(value);
                     return DropdownMenuItem<BoxStatus>(
                       value: value,
                       child: Center(
@@ -734,7 +734,7 @@ Future<void> _handleNewFondAddition(BuildContext context) async {
         bool overwrite = await _showOverrideDateDialog('Sending Date');
         if (overwrite) {
           updates['sendingDate'] = now;
-          box!.sendingDate = now; // Update local box object
+          box!.sendingDate = now; 
         }
       }
 
@@ -746,8 +746,9 @@ Future<void> _handleNewFondAddition(BuildContext context) async {
               (_) => _showSnackbar('Status updated successfully', Colors.green))
           .catchError((error) =>
               _showSnackbar('Error updating status: $error', Colors.red));
-
-      await _updateBoxCountsInRequestDocument(newStatus, oldStatus);
+            if (box != null) {
+                await BoxStatusUtil.updateBoxCountsInRequestDocument(box!, newStatus, oldStatus);
+            }
     } else {
       _showSnackbar('Error: Box ID is not available', Colors.red);
     }
@@ -781,36 +782,6 @@ Future<void> _handleNewFondAddition(BuildContext context) async {
       },
     );
     return overwrite;
-  }
-
-  Future<void> _updateBoxCountsInRequestDocument(
-      BoxStatus newStatus, BoxStatus? oldStatus) async {
-    if (box?.requestId != null && oldStatus != null) {
-      DocumentReference requestDocRef =
-          FirebaseFirestore.instance.collection('requests').doc(box!.requestId);
-
-      // Fetch the current box counts from the request document
-      var requestSnapshot = await requestDocRef.get();
-      var requestData =
-          requestSnapshot.data() as Map<String, dynamic>; // Explicit cast
-      Map<String, int> boxCounts = requestData.containsKey('boxStatusCounts')
-          ? Map<String, int>.from(requestData['boxStatusCounts'])
-          : {};
-
-      // Update the count for the old and new status
-      String newStatusKey = newStatus.toString().split('.').last;
-      String oldStatusKey = oldStatus.toString().split('.').last;
-
-      boxCounts[newStatusKey] = (boxCounts[newStatusKey] ?? 0) + 1;
-      boxCounts[oldStatusKey] = (boxCounts[oldStatusKey] ?? 1) - 1;
-
-      // Ensure counts do not go below zero
-      boxCounts[oldStatusKey] =
-          boxCounts[oldStatusKey]!.isNegative ? 0 : boxCounts[oldStatusKey]!;
-
-      // Write back the updated counts to the request document
-      await requestDocRef.update({'boxStatusCounts': boxCounts});
-    }
   }
 
   void _updateBoxLocationInFirebase(BoxLocation newLocation) {

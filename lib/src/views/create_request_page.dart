@@ -17,6 +17,7 @@ class _RequestCreationPageState extends State<RequestCreationPage> {
   bool isRepeat = false;
   bool isProxy = false;
   bool isUrgent = false;
+  bool isMedical = false;
   String organizationName = '';
   String comments = '';
   String? organizationNameError;
@@ -37,6 +38,7 @@ class _RequestCreationPageState extends State<RequestCreationPage> {
       isUrgent: isUrgent,
       isRepeat: isRepeat,
       isProxy: isProxy,
+      isMedical: isMedical,
       organizationName: isProxy ? organizationName : null,
       comments: comments,
       timestamp: null,
@@ -80,6 +82,7 @@ void _saveRequest(Request newRequest) async {
       isUrgent: newRequest.isUrgent,
       isRepeat: newRequest.isRepeat,
       isProxy: newRequest.isProxy,
+      isMedical: newRequest.isMedical,
       organizationName: newRequest.organizationName,
       comments: newRequest.comments,
       timestamp: newRequest.timestamp,
@@ -101,6 +104,7 @@ void _saveRequest(Request newRequest) async {
       isUrgent: newRequest.isUrgent,
       isRepeat: newRequest.isRepeat,
       isProxy: newRequest.isProxy,
+      isMedical: newRequest.isMedical,
       organizationName: newRequest.organizationName,
       comments: newRequest.comments,
       boxStatusCounts: initialBoxCounts,
@@ -205,6 +209,11 @@ void _saveRequest(Request newRequest) async {
               title: 'Urgent Request',
               value: isUrgent,
               onChanged: (value) => setState(() => isUrgent = value),
+            ),
+            _buildToggleSwitch(
+              title: 'Medical Request',
+              value: isMedical,
+              onChanged: (value) => setState(() => isMedical = value)
             ),
             _buildToggleSwitch(
               title: 'Acting as Proxy',

@@ -8,6 +8,7 @@ import 'package:paws_app/src/views/storage/add_supply_page.dart';
 import 'package:paws_app/src/views/storage/scan_supply_page.dart';
 import 'package:paws_app/src/views/storage/supply_item_details.dart';
 import 'package:paws_app/src/views/view_components/pet_supply_list_item.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 class StoragePage extends StatefulWidget {
   const StoragePage({super.key});
@@ -46,6 +47,14 @@ class _StoragePageState extends State<StoragePage> {
         });
       }
     });
+  }
+
+  void fixBarcodes() {
+    void triggerFunction() async {
+     HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('callableFixBarcodes');
+    final results = await callable.call();
+    print(results.data);
+}
   }
 
   void filterSupplies(String searchText) {

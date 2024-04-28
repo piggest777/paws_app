@@ -27,11 +27,14 @@ class BoxItemService {
   if (item.ukTranslation != null && item.ukTranslation!.isNotEmpty) {
     return item.ukTranslation!;
   }
+    return getItemTypeTranslation(item.supplyType, item.foodType);
+  }
 
-    switch (item.supplyType) {
+  static String getItemTypeTranslation (String? itemType, String? foodType) {
+        switch (itemType) {
       case "Food":
-        if (item.foodType == "Wet") return 'м’який корм для тварин';
-        if (item.foodType == "Dry") return 'сухий корм для тварин';
+        if (foodType == "Wet") return 'м’який корм для тварин';
+        if (foodType == "Dry") return 'сухий корм для тварин';
         return 'Їжа для тварин'; // Fallback for food without specific type
 
       case "Snacks":
@@ -72,6 +75,9 @@ class BoxItemService {
 
       case "Nail clippers":
         return "Кігтеріз";
+
+      case "Harness":
+        return "Шлея";
 
       case "Pet carrier":
         return 'Переноска';

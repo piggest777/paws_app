@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:paws_app/src/models/pet_care_supply_type.dart';
+import 'package:paws_app/src/services/box_item_service.dart';
 
 class BoxItemListItem extends StatelessWidget {
   final PetCareSupply supply;
@@ -24,6 +25,7 @@ class BoxItemListItem extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(BoxItemService.getItemTypeTranslation(supply.supplyType, supply.foodType)),
             Text('Count: ${supply.count}, Weight: ${supply.weight} kg'),
             if (supply.barcode != null)
               Text('Barcode: ${supply.barcode}', style: const TextStyle(fontSize: 12, color: Colors.grey)),

@@ -10,6 +10,7 @@ class Request {
   bool isUrgent;
   bool isRepeat;
   bool isProxy;
+  bool? isMedical;
   String? organizationName;
   String comments;
   Timestamp? timestamp; 
@@ -25,6 +26,7 @@ class Request {
     required this.isUrgent,
     required this.isRepeat,
     required this.isProxy,
+    this.isMedical,
     this.organizationName,
     required this.comments,
     this.timestamp, 
@@ -41,6 +43,7 @@ class Request {
       'isUrgent': isUrgent,
       'isRepeat': isRepeat,
       'isProxy': isProxy,
+      'isMedical': isMedical, 
       'organizationName': isProxy ? organizationName : null,
       'comments': comments,
       'timestamp': timestamp ?? FieldValue.serverTimestamp(),
@@ -59,6 +62,7 @@ class Request {
       isUrgent: map['isUrgent'] ?? false,
       isRepeat: map['isRepeat'] ?? false,
       isProxy: map['isProxy'] ?? false,
+      isMedical: map['isMedical'] ?? false,
       organizationName: map['organizationName'],
       comments: map['comments'] ?? '',
       timestamp: map['timestamp'] is Timestamp ? map['timestamp'] : null, 

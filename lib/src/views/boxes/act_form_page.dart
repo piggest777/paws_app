@@ -81,6 +81,7 @@ List<ActItem> _adjustItemsWithBoxWeight(List<ActItem> items, double boxWeight) {
             number: item.number,
             description: item.description,
             units: item.units,
+            type: item.type,
             packing: item.packing,
             quantity: item.quantity,
             nettoWeight: adjustedNettoWeight,

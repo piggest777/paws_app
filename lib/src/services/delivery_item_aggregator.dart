@@ -40,6 +40,7 @@ Future<AggregationResult> aggregateItems(String batchDeliveryId) async {
         summary[actItem.description] = ActItemSummary(
           description: actItem.description,
           units: actItem.units,
+          type: actItem.type,
           quantity: actItem.quantity,
           totalWeight: actItem.nettoWeight,
         );
@@ -75,6 +76,7 @@ Map<String, ActItemSummary> _adjustItemsWithPackageWeight(Map<String, ActItemSum
     adjustedSummary[description] = ActItemSummary(
       description: actItemSummary.description,
       units: actItemSummary.units,
+      type: actItemSummary.type,
       quantity: actItemSummary.quantity,
       totalWeight: actItemSummary.totalWeight + additionalWeight, // Adjust the weight
     );
@@ -96,12 +98,14 @@ class AggregationResult {
 class ActItemSummary {
   String description;
   String units;
+  String type;
   double quantity;
   double totalWeight;
 
   ActItemSummary({
     required this.description,
     required this.units,
+    required this.type,
     required this.quantity,
     required this.totalWeight,
   });

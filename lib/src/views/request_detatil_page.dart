@@ -59,7 +59,10 @@ class _RequestDetailsPageState extends State<RequestDetailsPage> {
             PersonInfoCard(userId: widget.request.personId),
             if (widget.request.isProxy && widget.request.organizationName != null)
               _buildOrganizationInfoCard(),
-              if (widget.request.isUrgent == true || widget.request.isRepeat == true || widget.request.comments.isNotEmpty)
+              if (widget.request.isUrgent == true ||
+              widget.request.isRepeat == true ||
+              widget.request.comments.isNotEmpty ||
+              widget.request.isMedical == true)
                 _buildRequestSummary(),
             BoxListWidget(requestId: widget.request.id, request: widget.request),
           ],
@@ -118,13 +121,15 @@ Widget _buildRequestSummary() {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Urgency and repeated Status
-              if (widget.request.isUrgent || widget.request.isRepeat) 
+              if (widget.request.isUrgent || widget.request.isRepeat || (widget.request.isMedical != null) == true) 
                 Wrap(
                   children: [
                     if (widget.request.isUrgent)
                       _buildStatusTag("Urgent", Colors.redAccent),
                     if (widget.request.isRepeat)
                       _buildStatusTag("Repeated", Colors.orangeAccent),
+                    if (widget.request.isMedical ?? false)
+                      _buildStatusTag("Medical", Colors.blueAccent),
                   ],
                 ),
               // Comments

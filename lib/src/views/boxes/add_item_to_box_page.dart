@@ -135,6 +135,7 @@ Future<Map<String, dynamic>?> _requestCustomWeightAndTranslation(String? supplyT
                     decoration: const InputDecoration(hintText: 'Weight (kg)'),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   ),
+                  if (isTranslationRequired)
                   TextField(
                     controller: translationController,
                     decoration: InputDecoration(
@@ -243,7 +244,7 @@ Future<Map<String, dynamic>?> _requestCustomWeightAndTranslation(String? supplyT
 
 void _addItemToBoxAndDecrementCount(PetCareSupply supply, double quantityToAdd) async {
   // If the item is not generic, check the quantity
-  if (!supply.isGeneric && (quantityToAdd <= 0 || quantityToAdd > supply.count)) {
+  if (!supply.isGeneric && quantityToAdd <= 0) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Invalid quantity.')),
     );

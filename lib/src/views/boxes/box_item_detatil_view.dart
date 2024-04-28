@@ -181,8 +181,7 @@ Widget _buildQuantityInput() {
 Widget _buildQuantityAndWeightInput() {
   return LayoutBuilder(
     builder: (context, constraints) {
-      // Determine if the layout is for mobile or web/desktop based on the constraints
-      bool isMobile = constraints.maxWidth < 600; // You can adjust this breakpoint
+      bool isMobile = constraints.maxWidth < 600; 
 
       Widget quantityInput = _buildInputField(
         controller: _quantityController,
@@ -374,6 +373,7 @@ void _requestCustomDetailsDialog(PetCareSupply supply, double quantityToAdd) {
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(hintText: 'Weight (kg)'),
                   ),
+                  if (isTranslationRequired)
                   TextField(
                     controller: ukTranslationController,
                     decoration: InputDecoration(

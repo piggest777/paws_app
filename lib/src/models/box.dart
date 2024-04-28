@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum BoxSize { small, large }
 enum BoxType { cats, dogs, puppy, mix, medical, other }
-enum BoxStatus { created, packing, packed, storage, sended, recived, rapported }
+enum BoxStatus { created, packing, packed, storage, readyForShipment, sended, recived, rapported }
 enum BoxLocation {office, elevator, basement }
 
 class Box {

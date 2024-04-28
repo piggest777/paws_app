@@ -172,6 +172,7 @@ class _CounterCardWidgetState extends State<CounterCardWidget> {
                   }
 
                   setState(() {
+                    finalValueToAdd = double.parse(finalValueToAdd.toStringAsFixed(2));
                     editedValue +=
                         finalValueToAdd; // Add the finalValueToAdd to the current editedValue
                     _controller.text = editedValue.toStringAsFixed(
@@ -179,8 +180,8 @@ class _CounterCardWidgetState extends State<CounterCardWidget> {
                     isValueChanged =
                         true; // Indicate that a change has occurred
                   });
-                  widget.onSave(
-                      editedValue); // Call the onSave callback with the new total value
+                  print(editedValue);
+                  widget.onSave(editedValue); // Call the onSave callback with the new total value
                   Navigator.of(context).pop(); // Close the modal bottom sheet
                 },
                 child: const Text('Add'),

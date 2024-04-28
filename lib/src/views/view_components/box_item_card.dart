@@ -21,7 +21,7 @@ class BoxItemCard extends StatelessWidget {
     String formatNumber(double n) => n.truncateToDouble() == n ? n.toStringAsFixed(0) : n.toStringAsFixed(2);
 
     // Get the description from BoxItemService
-    String description = BoxItemService.getDescription(item); // Ensure this method exists and is accessible
+    String description = BoxItemService.getDescription(item);
 
     return Card(
       elevation: 4,
