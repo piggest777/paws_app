@@ -115,7 +115,7 @@ class _EditSupplyPageState extends State<EditSupplyPage> {
               decoration: const InputDecoration(labelText: 'Weight (kg)'),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               enabled: !isGeneric,
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,1}'))],
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,3}'))],
             ),
             const SizedBox(height: 16),
               buildDropdown(
