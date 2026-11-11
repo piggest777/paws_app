@@ -1,5 +1,7 @@
 # Paws of Peace
 
+**Active development** · 2023–2024
+
 A Flutter app that helps Paws of Peace volunteers track supply requests, packing, and shipments from shared inventory.
 
 ## Volunteer workflows
